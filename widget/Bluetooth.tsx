@@ -37,7 +37,6 @@ export class ConnectedBluetoothDevices implements Subscribable<Array<Bluetooth.D
   }
 
   private reset(devices: Array<Bluetooth.Device>) {
-    console.log(`Resetting with ${devices.length}`)
     this.devicesUnsub()
     this.devices.drop()
 
