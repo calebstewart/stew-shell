@@ -47,7 +47,7 @@ function MediaPlayer({ player }: { player: Mpris.Player }) {
       <box className="title">
         <label truncate hexpand halign={START} label={title} />
         <icon className="player-icon" icon={playerIcon} css="margin: 0.5rem" />
-        <button className="player-close" onClicked={() => player.quit()}>
+        <button className="player-close" visible={bind(player, "canQuit")} onClicked={() => player.quit()}>
           <icon icon="window-close-symbolic" />
         </button>
       </box>
@@ -70,6 +70,11 @@ function MediaPlayer({ player }: { player: Mpris.Player }) {
             onClicked={() => player.previous()}
             visible={bind(player, "canGoPrevious")}>
             <icon icon="media-skip-backward-symbolic" />
+          </button>
+          <button
+            onClicked={() => player.stop()}
+            visible={bind(player, "canControl")}>
+            <icon icon="media-playback-stop-symbolic" />
           </button>
           <button
             onClicked={() => player.play_pause()}

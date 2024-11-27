@@ -1,48 +1,40 @@
-import { Variable } from "astal"
-import { App, Gdk } from "astal/gtk3"
-import style from "./style.scss"
-import Bar, { Menubar } from "./widget/Bar"
-import Hyprland from "gi://AstalHyprland"
 import { bind } from "astal/binding"
-import SystemMenu from "./widget/SystemMenu"
+import { App, Gtk } from "astal/gtk3"
+import style from "./style.scss"
+import Bar from "./widget/Bar"
+import NotificationPopup from "./widget/NotificationPopup"
+import { Launcher, ToggleLauncher } from "./widget/Applications"
+import { CurrentGdkMonitor } from "./widget/Hyprland"
+import DashMenu, { ToggleDashMenu } from "./widget/DashMenu"
 
 App.start({
   css: style,
   main() {
-    const hyprland = Hyprland.get_default()
+    NotificationPopup(bind(CurrentGdkMonitor))
+    Launcher()
+    DashMenu()
 
-    // Create a binding for the active GDK Monitor at any given time
-    const focusedGdkMonitor = bind(hyprland, "focused_monitor").as((hm) => {
-      const display = Gdk.Display.get_default()
-
-      if (display !== null) {
-        const screen = display?.get_default_screen()
-
-        for (let i = 0; i < display.get_n_monitors(); i++) {
-          if (screen.get_monitor_plug_name(i) == hm.name) {
-            const gm = display.get_monitor(i)
-            if (gm === null) {
-              return undefined
-            } else {
-              return gm
-            }
-          }
-        }
-      }
-
-      return undefined
-    })
-
-    // Create the global system menu
-    const systemMenu = SystemMenu({
-      GdkMonitor: focusedGdkMonitor,
-    })
-
-    // Create a bar for each monitor
     App.get_monitors().map((mon, idx) => {
-      Bar(mon, idx, systemMenu)
-
-      // Menubar(mon, idx)
+      Bar(mon, idx)
     })
+  },
+  requestHandler(request: string, rawRespond: (response: any) => void) {
+    const respond = (v: any) => rawRespond(JSON.stringify(v))
+
+    try {
+      switch (request) {
+        case "toggle-launcher":
+          respond({ "launcher_visible": ToggleLauncher() })
+          break
+        case "toggle-dash":
+          respond({ "dash_visible": ToggleDashMenu() })
+          break
+        default:
+          respond({ "error": `unknown command: ${request}` })
+          break
+      }
+    } catch (e) {
+      respond({ "error": "unhandled exception", "exception": e })
+    }
   },
 })

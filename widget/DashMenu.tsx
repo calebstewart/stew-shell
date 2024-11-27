@@ -1,16 +1,20 @@
 import { Variable, GObject, Gio, GLib } from "astal"
-import { Astal, Gdk, Gtk, astalify } from "astal/gtk3"
+import { timeout } from "astal/time"
+import { Astal, Gdk, Gtk, astalify, App } from "astal/gtk3"
 import Binding, { bind } from "astal/binding"
 import Notifd from "gi://AstalNotifd"
 import Notification from "./Notification"
-import NotificationPopup from "./NotificationPopup"
+import NotificationPopup, { HideNotificationPopup } from "./NotificationPopup"
 import Bluetooth from "gi://AstalBluetooth"
 import Network from "gi://AstalNetwork"
 import { DoNotDisturb } from "./NotificationPopup"
 import Mpris from "gi://AstalMpris"
 import MprisPlayers from "./MediaPlayer"
 import Wp from "gi://AstalWp"
+import Hyprland from "gi://AstalHyprland"
+import { FindGdkMonitor, CurrentGdkMonitor } from "./Hyprland"
 import { ToggleButton } from "./Builtin"
+import PopupCloser from "./Popup"
 
 const bluetooth = Bluetooth.get_default()
 const network = Network.get_default()
@@ -241,7 +245,7 @@ function NotificationView() {
   </box>
 }
 
-export default function SystemMenu({ GdkMonitor }: Props) {
+function SystemMenu({ GdkMonitor }: Props) {
   const menu = <window
     className="SystemMenu"
     gdkmonitor={GdkMonitor}
@@ -263,4 +267,107 @@ export default function SystemMenu({ GdkMonitor }: Props) {
   })
 
   return menu
+}
+
+function createSystemMenu() {
+  const seat = Gdk.Display.get_default()?.get_default_seat()!
+
+  const menu = <window
+    className="SystemMenu"
+    gdkmonitor={bind(Hyprland.get_default(), "focused_monitor").as((m) => FindGdkMonitor(m))}
+    exclusivity={Astal.Exclusivity.EXCLUSIVE}
+    visible={false}
+    anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
+    onButtonPressEvent={(w, event) => {
+      console.log(`Button press for ${w}`)
+    }}
+    onDestroy={(w) => {
+      console.log("Settings window closing... releasing seat...")
+      HideNotificationPopup.set(false)
+      seat.ungrab()
+    }}
+    setup={(w) => {
+      HideNotificationPopup.set(true)
+
+      w.connect("map-event", (w, evt) => {
+        const gdkwin = w.get_window()!
+        console.log(`Grabbing seat for window ${gdkwin}`)
+        const result = seat.grab(gdkwin, Gdk.SeatCapabilities.ALL, true, null, null, null)
+        if (result != Gdk.GrabStatus.SUCCESS) {
+          console.log(`Failed to grab seat: ${result}`)
+        }
+      })
+    }}
+  >
+    <box vertical>
+      {QuickSettings()}
+      <Gtk.Separator visible />
+      {MediaPlayer()}
+      <Gtk.Separator visible />
+      {NotificationView()}
+    </box>
+  </window>
+
+  menu.show_all()
+  timeout(10000, () => (menu as Gtk.Window).close())
+}
+
+export const DashMenuName = "DashMenu"
+export const DashMenuCloserName = "DashMenuCloser"
+
+export function HideDashMenu() {
+  App.get_window(DashMenuName)?.hide()
+  App.get_window(DashMenuCloserName)?.hide()
+}
+
+export function ShowDashMenu() {
+  App.get_window(DashMenuName)?.show()
+  App.get_window(DashMenuCloserName)?.show()
+}
+
+export function ToggleDashMenu() {
+  App.toggle_window(DashMenuName)
+  App.toggle_window(DashMenuCloserName)
+  return App.get_window(DashMenuName)?.visible
+}
+
+export default function DashMenu() {
+  const dash = <window
+    name={DashMenuName}
+    namespace={DashMenuName}
+    className={DashMenuName}
+    exclusivity={Astal.Exclusivity.EXCLUSIVE}
+    application={App}
+    visible={false}
+    layer={Astal.Layer.OVERLAY}
+    anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
+    onKeyPressEvent={(_, event) => {
+      const [has_keyval, keyval] = event.get_keyval()
+      if (has_keyval && keyval === Gdk.KEY_Escape) {
+        HideDashMenu()
+      }
+    }}>
+    <box vertical>
+      {QuickSettings()}
+      <Gtk.Separator visible />
+      {MediaPlayer()}
+      <Gtk.Separator visible />
+      {NotificationView()}
+    </box>
+  </window> as Gtk.Window
+
+  PopupCloser(DashMenuCloserName, bind(CurrentGdkMonitor), dash, () => {
+    HideDashMenu()
+    HideNotificationPopup.set(false)
+  })
+
+  CurrentGdkMonitor.subscribe((_) => HideDashMenu)
+
+  return dash
+}
+
+export function DashMenuButton() {
+  return <button className="DashMenuButton" onClicked={ToggleDashMenu}>
+    <label className="fa-solid" label={"\uf0c9"} />
+  </button>
 }

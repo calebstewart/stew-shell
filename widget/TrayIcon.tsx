@@ -7,6 +7,7 @@ export type TrayIconProps = {
   icon: Gtk.Widget,
   label: string | Binding<string>,
   onButtonReleased: (icon: Gtk.Widget, event: Gdk.Event) => void
+  onDestroy?: () => void,
   lockReveal?: boolean | Binding<boolean>
 }
 
@@ -20,9 +21,13 @@ export function RevealValue(event: Gdk.Event, value: boolean, button: number = 1
   return !value
 }
 
-export default function TrayIcon({ className, icon, label, onButtonReleased, lockReveal }: TrayIconProps) {
+export default function TrayIcon({ className, icon, label, onButtonReleased, onDestroy, lockReveal }: TrayIconProps) {
   if (lockReveal === undefined) {
     lockReveal = bind(Variable(false))
+  }
+
+  if (onDestroy === undefined) {
+    onDestroy = () => { }
   }
 
   if (lockReveal === false || lockReveal === true) {
@@ -42,7 +47,7 @@ export default function TrayIcon({ className, icon, label, onButtonReleased, loc
   </box>
   icon.get_style_context().add_class("systemTrayIcon")
 
-  return <box className={`systemTrayItem ${className}`}>
+  return <box className={`systemTrayItem ${className}`} onDestroy={onDestroy}>
     <eventbox
       onHover={() => has_hover.set(true)}
       onHoverLost={() => has_hover.set(false)}

@@ -9,29 +9,34 @@ type Props = {
 }
 
 export const DoNotDisturb = Variable(false)
+export const HideNotificationPopup = Variable(false)
 
-export default function NotificationPopup({ GdkMonitor: Monitor, SystemMenu }: Props) {
+export default function NotificationPopup(monitor: Gdk.Monitor | Binding<Gdk.Monitor>) {
   const cache = new NotificationCache()
   const notifications = Variable.derive([cache, DoNotDisturb], (widgets, dnd) => {
     return dnd ? [] : widgets
   })
 
+  const unsub = HideNotificationPopup.subscribe((v) => {
+    if (!v) {
+      cache.clear()
+    }
+  })
+
   const window = <window
     className="NotificationPane"
-    gdkmonitor={Monitor}
+    gdkmonitor={monitor}
     exclusivity={Astal.Exclusivity.EXCLUSIVE}
-    visible={bind(SystemMenu, "visible").as((v) => !v)}
-    onDestroy={() => notifications.drop()}
+    visible={bind(HideNotificationPopup).as((v) => !v)}
+    onDestroy={() => {
+      unsub()
+      notifications.drop()
+    }}
     anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}>
     <box vertical>
       {bind(notifications)}
     </box>
   </window>
-
-  // Clear the notification cache when the popup is shown. This only happens when 
-  // the system menu is shown to make sure don't duplicate notifications while the
-  // system menu is open.
-  window.connect("show", (_) => cache.clear())
 
   // Return the window
   return window
