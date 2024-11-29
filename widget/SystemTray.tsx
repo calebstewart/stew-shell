@@ -6,6 +6,7 @@ import Embermug from "./Embermug"
 import { BluetoothTrayIcon } from "./Bluetooth"
 import { WiredTrayIcon, WirelessTrayIcon } from "./Network"
 import { ClockTrayIcon } from "./Clock"
+import { ListeningIndicator } from "./Audio"
 
 const tray = Tray.get_default()
 const embermug = Embermug.get_default()
@@ -57,6 +58,7 @@ export default function SystemTray() {
     {BluetoothTrayIcon()}
     {WiredTrayIcon()}
     {WirelessTrayIcon()}
+    {ListeningIndicator()}
     {ClockTrayIcon()}
   </box>
 }

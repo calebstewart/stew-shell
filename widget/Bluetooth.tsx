@@ -1,4 +1,5 @@
 import { Variable, GObject } from "astal"
+import { timeout } from "astal/time"
 import { bind, Subscribable } from "astal/binding"
 import { Gdk, Gtk } from "astal/gtk3"
 import Bluetooth from "gi://AstalBluetooth"
@@ -87,12 +88,25 @@ export function BluetoothTrayIcon() {
   </AstalMenu> as Gtk.Menu
 
   const connectedDevices = new ConnectedBluetoothDevices()
+  const reveal = Variable(false)
+
+  connectedDevices.subscribe((_) => {
+    reveal.set(true)
+    timeout(3000, () => reveal.set(false))
+  })
+
+  bind(bluetooth, "is-powered").subscribe((_) => {
+    reveal.set(true)
+    timeout(3000, () => reveal.set(false))
+  })
 
   return TrayIcon({
     className: "Bluetooth",
     icon: <icon icon={bind(bluetooth, "is-powered").as((p) => p ? "bluetooth-active" : "bluetooth-disabled")} />,
     label: bind(connectedDevices).as((devices) => {
-      if (devices.length == 0) {
+      if (!bluetooth.is_powered) {
+        return "Disabled"
+      } else if (devices.length == 0) {
         return "Disconnected"
       } else if (devices.length == 1) {
         return devices[0].name
@@ -100,6 +114,7 @@ export function BluetoothTrayIcon() {
         return `${devices.length} Connected`
       }
     }),
+    lockReveal: bind(reveal),
     // label: "Bluetooth",
     onDestroy: () => connectedDevices.drop(),
     onButtonReleased: (widget, event) => {

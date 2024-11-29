@@ -2,7 +2,7 @@ import { Variable } from "astal"
 import { Astal, Gtk, Gdk } from "astal/gtk3"
 import { bind } from "astal/binding"
 import Hyprland from "gi://AstalHyprland"
-import Applications, { ToggleLauncher } from "./Applications"
+import Applications, { ToggleLauncherMenu } from "./Applications"
 
 const hyprland = Hyprland.get_default()
 
@@ -38,7 +38,7 @@ export function ActiveClient(_monitor: Hyprland.Monitor, monitorIndex: number) {
           {bind(ws, "last_client").as((client) => {
             if (client !== null) {
               return <box className="ActiveClient">
-                <button onClicked={ToggleLauncher}>
+                <button onClicked={ToggleLauncherMenu}>
                   <icon icon={bind(Applications, "list").as((apps) => {
                     if (Astal.Icon.lookup_icon(client.initial_class) !== null) {
                       return client.initial_class

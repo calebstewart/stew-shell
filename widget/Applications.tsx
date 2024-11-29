@@ -1,4 +1,4 @@
-import { Variable } from "astal"
+import { Variable, GLib, Gio } from "astal"
 import { bind } from "astal/binding"
 import { App, Astal, Gtk, Gdk } from "astal/gtk3"
 import Apps from "gi://AstalApps"
@@ -15,7 +15,10 @@ export default Applications
 function AppButton({ app }: { app: Apps.Application }) {
   return <button
     className="App"
-    onClicked={() => { HideLauncher(); app.launch() }}>
+    onClicked={() => {
+      HideLauncherMenu()
+      app.launch()
+    }}>
     <box>
       <icon icon={app.iconName} />
       <box valign={Gtk.Align.CENTER} vertical>
@@ -36,18 +39,19 @@ function AppButton({ app }: { app: Apps.Application }) {
   </button>
 }
 
-export function ToggleLauncher() {
+
+export function ToggleLauncherMenu() {
   App.toggle_window(LauncherName)
   App.toggle_window(LauncherCloserName)
   return App.get_window(LauncherName)?.visible
 }
 
-export function ShowLauncher() {
+export function ShowLauncherMenu() {
   App.get_window(LauncherName)?.show()
   App.get_window(LauncherCloserName)?.show_all()
 }
 
-export function HideLauncher() {
+export function HideLauncherMenu() {
   App.get_window(LauncherName)?.hide()
   App.get_window(LauncherCloserName)?.hide()
 }
@@ -60,7 +64,7 @@ export function Launcher() {
     if (applications.length > 0) {
       applications[0]?.launch()
     }
-    HideLauncher()
+    HideLauncherMenu()
   }
 
   // Create the launcher top-level window
@@ -76,7 +80,7 @@ export function Launcher() {
     visible={false}
     onKeyPressEvent={function(_, event: Gdk.Event) {
       if (event.get_keyval()[1] === Gdk.KEY_Escape) {
-        HideLauncher()
+        HideLauncherMenu()
       }
     }}>
     <box className="Launcher" vertical>
@@ -104,7 +108,7 @@ export function Launcher() {
 
   PopupCloser(LauncherCloserName, bind(CurrentGdkMonitor), launcher)
 
-  CurrentGdkMonitor.subscribe((_) => HideLauncher())
+  CurrentGdkMonitor.subscribe((_) => HideLauncherMenu())
 
   return launcher
 }

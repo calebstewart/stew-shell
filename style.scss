@@ -11,7 +11,9 @@
 $fg-color: #{"@theme_fg_color"};
 $bg-color: #{"@theme_bg_color"};
 $error: #{"@error_color"};
+$warning: #{"@warning_color"};
 $borders: #{"@borders"};
+$selected-fg-color: #{"@theme_selected_fg_color"};
 
 menu.BluetoothMenu {
   menuitem > box > icon {
@@ -76,6 +78,10 @@ window.Bar {
   }
 
   .SystemTray {
+    .systemTrayItemLabel {
+      margin-right: 0.5rem;
+    }
+
     .fa-solid {
       font-size: 12pt;
     }
@@ -83,6 +89,24 @@ window.Bar {
     .systemTrayIcon {
       font-size: 12pt;
       margin: 0 0.5rem;
+    }
+  }
+
+  .ListeningIndicator.unmuted {
+    animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
+
+    @keyframes unmuted-flash {
+      0% { background-color: $error; }
+      100% { background-color: $bg-color; }
+    }
+  }
+
+  .ListeningIndicator.muted {
+    animation: muted-flash 2s ease-in-out 0s infinite alternate;
+
+    @keyframes muted-flash {
+      0% { background-color: gtkshade($fg-color, 1.5); color: gtkshade($bg-color, 0.67); }
+      100% { background-color: $bg-color; color: $fg-color; }
     }
   }
 }
