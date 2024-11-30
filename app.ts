@@ -1,27 +1,12 @@
 import { bind } from "astal/binding"
 import { App } from "astal/gtk3"
-import style from "./style.scss"
-import Bar from "./widget/Bar"
-import NotificationPopup from "./widget/NotificationPopup"
-import { Launcher } from "./widget/Applications"
-import { CurrentGdkMonitor } from "./widget/Hyprland"
-import DashMenu from "./widget/DashMenu"
+import style from "./style/main.scss"
 import HandleRequest from "./request"
+import Entrypoint from "./components"
 
 App.start({
+  instanceName: "dev1",
   css: style,
-  main() {
-    // Pop-up notifications on the currently selected monitor
-    NotificationPopup(bind(CurrentGdkMonitor))
-
-    // Pop-up application launcher window
-    Launcher()
-
-    // Pop-up dash menu containing notifications, media player(s) and quick settings
-    DashMenu()
-
-    // Status bar per-monitor
-    App.get_monitors().map(Bar)
-  },
+  main: Entrypoint,
   requestHandler: HandleRequest,
 })

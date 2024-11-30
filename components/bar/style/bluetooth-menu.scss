@@ -1,0 +1,8 @@
+@use "../../../style/gtk.scss" as *;
+
+menu.BluetoothMenu {
+  menuitem > box > icon {
+    margin-right: 0.5rem;
+  }
+}
+

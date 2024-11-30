@@ -1,4 +1,4 @@
-import { ToggleLauncherMenu } from "../widget/Applications"
+import { ToggleLauncherMenu } from "../components/launcher"
 import RequestHandler from "./request"
 
 export default class ToggleLauncher implements RequestHandler {

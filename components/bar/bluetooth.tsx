@@ -1,13 +1,18 @@
-import { Variable, GObject } from "astal"
-import { timeout } from "astal/time"
-import { bind, Subscribable } from "astal/binding"
-import { Gdk, Gtk } from "astal/gtk3"
+import { Variable, bind, timeout } from "astal"
+import { Subscribable } from "astal/binding"
+import { Gtk, Gdk } from "astal/gtk3"
 import Bluetooth from "gi://AstalBluetooth"
-import TrayIcon from "./TrayIcon"
-import { AstalMenu, AstalMenuItem } from "./Builtin"
+
+import { AstalMenu, AstalMenuItem } from "../builtin"
+import BarItem from "./item"
+
+import menu_style from "./style/bluetooth-menu.scss"
 
 const bluetooth = Bluetooth.get_default()
 
+// Subscribable interface for connected devices, which are a subset of all devices
+// which are actively connected. Notification happens whenever a device is
+// connected or disconnected.
 export class ConnectedBluetoothDevices implements Subscribable<Array<Bluetooth.Device>> {
   private devices: Variable<Array<Bluetooth.Device>> = Variable([])
   private subscribers: Array<(devices: Array<Bluetooth.Device>) => void> = new Array()
@@ -55,8 +60,10 @@ export class ConnectedBluetoothDevices implements Subscribable<Array<Bluetooth.D
   }
 }
 
-export function BluetoothTrayIcon() {
-  const menu = <AstalMenu className="BluetoothMenu">
+// Create a menu of bluetooth devices allowing the user to connect/disconnect
+// the devices at will.
+function BluetoothMenu() {
+  return <AstalMenu className="BluetoothMenu" css={menu_style}>
     {bind(bluetooth, "devices").as((devices) => devices.map((device) => {
       const icon = Variable.derive([bind(device, "connected"), bind(device, "connecting")], (connected, connecting) => {
         if (connected) {
@@ -86,44 +93,51 @@ export function BluetoothTrayIcon() {
       </AstalMenuItem>
     }))}
   </AstalMenu> as Gtk.Menu
+}
 
-  const connectedDevices = new ConnectedBluetoothDevices()
+export default function BluetoothItem() {
+  const menu = BluetoothMenu()
+  const devices = new ConnectedBluetoothDevices()
   const reveal = Variable(false)
-
-  connectedDevices.subscribe((_) => {
+  const unsubDevices = devices.subscribe((_) => {
     reveal.set(true)
     timeout(3000, () => reveal.set(false))
   })
-
-  bind(bluetooth, "is-powered").subscribe((_) => {
+  const unsubPowered = bind(bluetooth, "is_powered").subscribe((_) => {
     reveal.set(true)
     timeout(3000, () => reveal.set(false))
   })
+  const label_text = Variable.derive([devices, bind(bluetooth, "is_powered")], (devices, powered) => {
+    if (!powered) {
+      return "Disabled"
+    } else if (devices.length == 0) {
+      return "Disconnected"
+    } else if (devices.length == 1) {
+      return devices[0].name
+    } else {
+      return `${devices.length} Connected`
+    }
+  })
 
-  return TrayIcon({
-    className: "Bluetooth",
-    icon: <icon icon={bind(bluetooth, "is-powered").as((p) => p ? "bluetooth-active" : "bluetooth-disabled")} />,
-    label: bind(connectedDevices).as((devices) => {
-      if (!bluetooth.is_powered) {
-        return "Disabled"
-      } else if (devices.length == 0) {
-        return "Disconnected"
-      } else if (devices.length == 1) {
-        return devices[0].name
-      } else {
-        return `${devices.length} Connected`
-      }
-    }),
-    lockReveal: bind(reveal),
-    // label: "Bluetooth",
-    onDestroy: () => connectedDevices.drop(),
-    onButtonReleased: (widget, event) => {
+  return <BarItem
+    className="Bluetooth"
+    reveal={bind(reveal)}
+    onDestroy={() => {
+      unsubDevices()
+      unsubPowered()
+      label_text.drop()
+      devices.drop()
+      menu.destroy()
+    }}
+    onButtonReleaseEvent={(widget, event) => {
       const [has_button, button] = event.get_button()
       if (!has_button || button != 3) {
         return
       }
 
       menu.popup_at_widget(widget, Gdk.Gravity.SOUTH_WEST, Gdk.Gravity.NORTH_WEST, event)
-    }
-  })
+    }}>
+    <icon icon={bind(bluetooth, "is_powered").as((p) => p ? "bluetooth-active" : "bluetooth-disabled")} />
+    <label label={bind(label_text)} />
+  </BarItem>
 }

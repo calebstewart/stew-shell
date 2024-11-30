@@ -36,6 +36,7 @@
           ags.packages.${system}.mpris
           ags.packages.${system}.wireplumber
           ags.packages.${system}.tray
+          pkgs.gtk-session-lock.dev
           # pkgs.fzf
         ];
       };
@@ -66,6 +67,7 @@
               ags.packages.${system}.mpris
               ags.packages.${system}.wireplumber
               ags.packages.${system}.tray
+              pkgs.gtk-session-lock.dev
             ];
           })
         ];

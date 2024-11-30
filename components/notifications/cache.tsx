@@ -1,10 +1,9 @@
-import { Variable, timeout } from "astal"
+import { Variable, timeout, bind } from "astal"
 import { Gtk } from "astal/gtk3"
 import { Subscribable } from "astal/binding"
 import Notifd from "gi://AstalNotifd"
-import Notification from "./Notification"
+import Notification from "./notification"
 
-const notifd = Notifd.get_default()
 const DEFAULT_POPUP_TIMEOUT = 5000
 
 export default class NotificationCache implements Subscribable {
@@ -15,21 +14,35 @@ export default class NotificationCache implements Subscribable {
     this.var.set([...this.map.values()].reverse())
   }
 
-  public constructor() {
+  public constructor(notifd: Notifd.Notifd) {
     notifd.connect("notified", (_, id) => this.show(notifd.get_notification(id), true))
     notifd.connect("resolved", (_, id) => this.delete(id))
   }
 
   public show(notif: Notifd.Notification, useTimeout: boolean = true) {
-    this.set(notif.id, Notification({
-      notification: notif,
-      onHoverLost: () => { },
-      setup: () => {
-        if (useTimeout && notif.get_expire_timeout() !== null) {
-          timeout(DEFAULT_POPUP_TIMEOUT, () => this.delete(notif.id))
-        }
-      },
-    }))
+    // Variable controlling if the notification is visible
+    const reveal = Variable(true).observe(timeout(DEFAULT_POPUP_TIMEOUT), "now", (_) => false)
+    var unsub: null | (() => void) = null
+
+    // Our notification wrapped in a revealer. The revealer is initially
+    // revealed. On dismiss or timeout, the revealer hides the child, and
+    // after the animation is finished and the child is hidden, the notification
+    // is removed from the cache.
+    const item = <revealer
+      reveal_child={bind(reveal)}
+      transition_type={Gtk.RevealerTransitionType.SLIDE_DOWN}
+      onDestroy={() => {
+        unsub && unsub()
+        reveal.drop()
+      }}>
+      <Notification notification={notif} onDismissed={() => reveal.set(false)} />
+    </revealer> as Gtk.Revealer
+
+    // Ensure that when the reveal animation is finished and the notification is
+    // hidden, we delete the notification from the cache.
+    unsub = bind(item, "child_revealed").subscribe((revealed) => !revealed && this.hide(notif))
+
+    this.set(notif.id, item)
   }
 
   public hide(notif: Notifd.Notification) {

@@ -1,0 +1,91 @@
+/**
+ * Status Bar Style Sheet
+ */
+@use "../../../style/gtk" as *;
+
+window.Bar {
+  // font-family: JetBrainsMono, "Noto Color Emoji";
+  background: $bg-color;
+  color: $fg-color;
+
+  > centerbox {
+    padding: 0.5em;
+  }
+
+  button {
+    color: $fg-color;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  button:hover {
+    color: gtkshade($fg-color, 1.2);
+    background: gtkalpha($bg-color, 0.9);
+  }
+
+  .ActiveClient > label {
+    font-size: 12pt;
+  }
+
+  .ActiveClient > button > icon {
+    font-size: 16pt;
+    margin-right: 4pt;
+  }
+
+  .Workspaces > button {
+    color: gtkshade($fg-color, 0.8);
+    box-shadow: none;
+    margin: 0 1rem;
+  }
+
+  .Workspaces > button:hover {
+    color: gtkshade($fg-color, 0.9);
+  }
+
+  .Workspaces > button.focused {
+    color: $fg-color;
+    font-weight: bold;
+  }
+
+  .Workspaces > button.focused:hover {
+    color: gtkshade($fg-color, 1.1);
+  }
+
+  .IconLabel {
+    margin-left: 1em;
+  }
+
+  .BarItem {
+    .BarItemContainer > revealer > * {
+      margin-right: 0.5rem;
+    }
+    
+    .BarItemContainer > .fa-solid {
+      font-size: 12pt;
+      margin: 0 0.5rem;
+    }
+
+    .BarItemContainer > icon {
+      font-size: 12pt;
+      margin: 0 0.5rem;
+    }
+  }
+
+  .ListeningIndicator.unmuted {
+    animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
+
+    @keyframes unmuted-flash {
+      0% { background-color: $error; }
+      100% { background-color: $bg-color; }
+    }
+  }
+
+  .ListeningIndicator.muted {
+    animation: muted-flash 2s ease-in-out 0s infinite alternate;
+
+    @keyframes muted-flash {
+      0% { background-color: gtkshade($fg-color, 1.5); color: gtkshade($bg-color, 0.67); }
+      100% { background-color: $bg-color; color: $fg-color; }
+    }
+  }
+}

@@ -1,9 +1,7 @@
-import { Gio, GLib } from "astal"
+import { Gio } from "astal"
 import { Variable } from "astal"
 import { Subscribable } from "astal/binding"
 import { idle, timeout } from "astal/time"
-import { bind } from "astal/binding"
-import TrayIcon from "./TrayIcon"
 
 export enum MugState {
   INVALID = 0,
@@ -15,7 +13,7 @@ export enum MugState {
   STABLE,
 }
 
-export function mugStateName(s: MugState): string {
+export function MugStateToString(s: MugState): string {
   switch (s) {
     case MugState.EMPTY:
       return "empty"
@@ -50,18 +48,19 @@ export interface Mug {
   HasLiquid: boolean
 }
 
-// Convert an embermug temperature to celcius
-export function temperatureToCelcius(t: number): number {
+// Convert an embermug temperature to celsius
+export function ToCelsius(t: number): number {
   return (t / 100.0)
 }
 
 // Convert an embermug temperature to fahrenheit
-export function temperatureToFahrenheit(t: number): number {
+export function ToFahrenheit(t: number): number {
   return 32 + ((t * 9.0) / 500.0)
 }
 
-export default class Embermug implements Subscribable<Mug> {
-  private static _singleton: Embermug | null = null
+// Embermug client
+export default class EmbermugClient implements Subscribable<Mug> {
+  private static _singleton: EmbermugClient | null = null
 
   private mug: Variable<Mug> // Variable holding the current state of the mug
   private cancellable: Gio.Cancellable // Cancellation signal
@@ -97,42 +96,12 @@ export default class Embermug implements Subscribable<Mug> {
     this.schedule_connect()
   }
 
-  public static get_default(): Embermug {
-    if (Embermug._singleton === null) {
-      Embermug._singleton = new Embermug("/tmp/embermug.sock")
+  public static get_default(): EmbermugClient {
+    if (EmbermugClient._singleton === null) {
+      EmbermugClient._singleton = new EmbermugClient("/tmp/embermug.sock")
     }
 
-    return Embermug._singleton
-  }
-
-  public create_tray_icon() {
-    return TrayIcon({
-      className: "Embermug",
-      icon: <label className="fa-solid" label={bind(this).as((mug) => (
-        mug.Connected && mug.HasLiquid ? "\uf7b6" : "\uf0f4"
-      ))} />,
-      label: bind(this).as((mug) => {
-        if (!mug.Connected) {
-          return "Disconnected"
-        }
-
-        const current = Math.round(temperatureToFahrenheit(mug.Current)).toString()
-        const target = Math.round(temperatureToFahrenheit(mug.Target)).toString()
-        const stateName = mugStateName(mug.State)
-
-        switch (mug.State) {
-          case MugState.COOLING:
-          case MugState.HEATING:
-            return `${stateName} (${current}F/${target}F)`
-          case MugState.STABLE:
-            return `${stateName} (${current}F)`
-          default:
-            return stateName
-        }
-      }),
-      onButtonReleased: (_widget, _event) => { },
-      lockReveal: bind(this).as((mug) => mug.Connected && mug.HasLiquid),
-    })
+    return EmbermugClient._singleton
   }
 
   public subscribe(callback: (value: Mug) => void): () => void {

@@ -1,8 +1,8 @@
-import { ToggleDashMenu } from "../widget/DashMenu"
+import { ToggleSettingsMenu } from "../components/settings-menu"
 import RequestHandler from "./request"
 
 export default class ToggleDash implements RequestHandler {
-  public name = "toggle-dash"
+  public name = "toggle-settings-menu"
   public description = "Toggle the quick settings dash menu"
 
   public handler(args: string | undefined) {
@@ -11,7 +11,7 @@ export default class ToggleDash implements RequestHandler {
     }
 
     return {
-      "dash": ToggleDashMenu(),
+      "state": ToggleSettingsMenu(),
     }
   }
 }

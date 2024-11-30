@@ -1,13 +1,16 @@
 @use "sass:string";
 
+// Provide access to alpha() for wrapped variables
 @function gtkalpha($c, $a) {
   @return string.unquote("alpha(#{$c}, #{$a})");
 }
 
+// Same as above for shade()
 @function gtkshade($c, $a) {
   @return string.unquote("shade(#{$c}, #{$a})");
 }
 
+// Define some useful aliases of CSS variables in GTK themes
 $fg-color: #{"@theme_fg_color"};
 $bg-color: #{"@theme_bg_color"};
 $error: #{"@error_color"};
@@ -15,14 +18,7 @@ $warning: #{"@warning_color"};
 $borders: #{"@borders"};
 $selected-fg-color: #{"@theme_selected_fg_color"};
 
-menu.BluetoothMenu {
-  menuitem > box > icon {
-    margin-right: 0.5rem;
-  }
-}
-
+// Just set this here globally
 .fa-solid {
   font-family: "Font Awesome 6 Free";
 }
-
-
