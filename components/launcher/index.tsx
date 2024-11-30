@@ -47,9 +47,11 @@ export function ApplicationButton({ application }: ApplicationButtonProps) {
           truncate
           xalign={0}
           label={bind(application, "name").as(String)} />
-        {bind(application, "description").as((d) => (
-          d && <label className="description" wrap xalign={0} label={d} />
-        ))}
+        {application.description && <label
+          className="description"
+          wrap
+          xalign={0}
+          label={application.description} />}
       </box>
     </box>
   </button>

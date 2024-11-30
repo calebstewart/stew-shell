@@ -7,8 +7,11 @@ export interface PopupWindowProps extends Widget.WindowProps { }
 
 export function PopupWindow(windowprops: PopupWindowProps) {
   const { onKeyPressEvent, name, child, application, layer, exclusivity, ...props } = windowprops
-  const hideOnEscape = (w: Widget.Window, _: Gdk.Event) => {
-    w.get_toplevel().hide()
+  const hideOnEscape = (w: Widget.Window, event: Gdk.Event) => {
+    const [has_keyval, keyval] = event.get_keyval()
+    if (has_keyval && keyval == Gdk.KEY_Escape) {
+      w.get_toplevel()?.hide()
+    }
   }
 
   // If the primary window uses the onKeyPressEvent signal, then we need to wrap
@@ -30,7 +33,7 @@ export function PopupWindow(windowprops: PopupWindowProps) {
     name={name}
     layer={Astal.Layer.OVERLAY}
     exclusivity={Astal.Exclusivity.EXCLUSIVE}
-    onKeyPressEvent={onKeyPressEvent}
+    onKeyPressEvent={newKeyPressHandler}
     application={application}>
     {child}
   </window>
