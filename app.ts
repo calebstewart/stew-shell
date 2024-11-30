@@ -5,7 +5,7 @@ import HandleRequest from "./request"
 import Entrypoint from "./components"
 
 App.start({
-  instanceName: "dev1",
+  // instanceName: "dev",
   css: style,
   main: Entrypoint,
   requestHandler: HandleRequest,
