@@ -33,6 +33,7 @@ export default function SetupSettingsMenu() {
   return <PopupWindow
     name={SettingsMenuName}
     className={SettingsMenuName}
+    namespace={SettingsMenuName}
     application={App}
     visible={false}
     anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
