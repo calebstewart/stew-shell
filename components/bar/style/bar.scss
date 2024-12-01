@@ -75,7 +75,7 @@ window.Bar {
     }
   }
 
-  .ListeningIndicator.unmuted {
+  .PrivacyIndicator.unmuted {
     animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
 
     @keyframes unmuted-flash {
@@ -84,7 +84,7 @@ window.Bar {
     }
   }
 
-  .ListeningIndicator.muted {
+  .PrivacyIndicator.muted {
     animation: muted-flash 2s ease-in-out 0s infinite alternate;
 
     @keyframes muted-flash {

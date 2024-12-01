@@ -2,7 +2,7 @@ import { Astal, App, Gtk, Gdk } from "astal/gtk3"
 
 import { ActiveClient, Workspaces } from "../hyprland"
 import { SettingsMenuButton } from "../settings-menu"
-import { ListeningIndicator } from "./privacy"
+import PrivacyIndicators from "./privacy"
 import { WiredStatus, WirelessStatus } from "./network"
 import Embermug, { TemperatureUnit } from "../embermug"
 import Bluetooth from "./bluetooth"
@@ -35,7 +35,7 @@ function EndBlock(_monitor: Gdk.Monitor, _index: number) {
     {Bluetooth()}
     {WiredStatus()}
     {WirelessStatus()}
-    {ListeningIndicator()}
+    {PrivacyIndicators()}
     {Clock()}
     {SettingsMenuButton()}
   </box>
