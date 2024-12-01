@@ -1,10 +1,38 @@
 @use "../../../style/gtk.scss" as *;
 
 window.LockerShade {
-  animation: fade-in 1s ease-in forwards 0s 1;
+  // animation: fade-in 1s ease-in forwards 0s 1;
 
-  @keyframes fade-in {
-    0% { background: gtkalpha($bg-color, 0.5); }
-    100% { background-color: $bg-color; }
+  // @keyframes fade-in {
+  //   0% { background: gtkalpha($bg-color, 0.5); }
+  //   100% { background-color: $bg-color; }
+  // }
+  
+  background-color: $bg-color;
+
+  .LockerHeader {
+    >label.time {
+      font-size: 64pt;
+      color: gtkshade($fg-color, 1.1);
+      margin: 2rem 2rem;
+    }
+    >label.fa-solid {
+      font-size: 128pt;
+      margin: 2rem 2rem;
+    }
+  }
+
+  .LockerPrompt {
+    >entry {
+      border-radius: 10px;
+      margin: 2rem 2rem;
+    }
+  }
+
+  label.random-quote {
+    font-size: 10pt;
+    color: gtkalpha($fg-color, 0.6);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
   }
 }

@@ -1,4 +1,5 @@
-import { Gtk, astalify } from "astal/gtk3"
+import GObject from "gi://GObject"
+import { Gtk, astalify, type ConstructProps } from "astal/gtk3"
 
 export const AstalMenu = astalify(Gtk.Menu)
 export const AstalMenuItem = astalify(Gtk.MenuItem)

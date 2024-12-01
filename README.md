@@ -76,3 +76,4 @@ But I'm not going to support it. Sorry. :)
 [RequestHandler]: ./request/request.ts
 [PopupWindow]: ./components/popup/index.ts
 [RegisterPerMonitorWindows]: ./components/per-monitor/index.ts
+[Embermug Service]: https://github.com/calebstewart/go-embermug

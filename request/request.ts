@@ -13,5 +13,5 @@ export default interface RequestHandler {
   name: string
   usage?: string
   description: string
-  handler: (args: string | undefined, handlers: Map<string, RequestHandler>) => any
+  handler: (args: string[], handlers: Map<string, RequestHandler>) => any
 }

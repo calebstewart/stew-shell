@@ -5,8 +5,8 @@ export default class Environ implements RequestHandler {
   public name = "environ"
   public description = "Return the current contents of the process environment as reported by GLib"
 
-  public handler(args: string | undefined) {
-    if (args !== undefined) {
+  public handler(args: string[]) {
+    if (args.length > 0) {
       throw new Error(`${this.name} expects no arguments`)
     }
 

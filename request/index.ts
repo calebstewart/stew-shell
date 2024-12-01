@@ -22,15 +22,37 @@ const requestHandlers: Map<string, RequestHandler> = [
   return m
 }, new Map())
 
-export default function HandleRequest(request: string, respond: (response: any) => void) {
+export default function HandleRequest(rawRequest: string, respond: (response: any) => void) {
   try {
-    const [name, args] = request.split(" ", 2)
+    var request: any
 
-    if (!requestHandlers.has(name)) {
-      throw new Error(`unknown command: ${name}`)
+    try {
+      request = JSON.parse(rawRequest)
+    } catch (_) {
+      request = rawRequest
     }
 
-    const response = requestHandlers.get(name)?.handler(args, requestHandlers)
+    if (typeof request === "string" || request instanceof String) {
+      const name = request
+      request = {
+        name: name,
+        args: [],
+      }
+    } else if (Array.isArray(request)) {
+      const args = request
+      request = {
+        name: args[0],
+        args: args.slice(1),
+      }
+    } else {
+      throw new Error(`Unknown Request: ${JSON.stringify(request)}`)
+    }
+
+    if (!requestHandlers.has(request.name)) {
+      throw new Error(`unknown command: ${request.name}`)
+    }
+
+    const response = requestHandlers.get(request.name)?.handler(request.args, requestHandlers)
     respond(JSON.stringify(response))
   } catch (e) {
     respond(JSON.stringify({

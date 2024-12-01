@@ -23,6 +23,10 @@ window.Bar {
     background: gtkalpha($bg-color, 0.9);
   }
 
+  .ActiveClient {
+    background-color: $bg-color;
+  }
+
   .ActiveClient > label {
     font-size: 12pt;
   }
