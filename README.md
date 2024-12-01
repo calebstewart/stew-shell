@@ -5,6 +5,8 @@ should work in any Hyprland environment, but I do not intend to support it for a
 besides myself. Feel free to ask questions or rip the code, though. I'm hoping it will
 be useful to someone besides myself.
 
+![Example](https://github.com/user-attachments/assets/0b9f6389-a379-44c9-a9ec-e943ff3bfa40)
+
 ## Organization
 The project is organized into two primary parts: [components], and [request handlers].
 
