@@ -7,6 +7,73 @@ be useful to someone besides myself.
 
 ![Example](https://github.com/user-attachments/assets/0b9f6389-a379-44c9-a9ec-e943ff3bfa40)
 
+## Building
+When developing, you can simply run `ags run .` within the repository to execute
+the shell. It should function within any Hyprland environment. You will just have
+an extra bar running.
+
+You can bundle the application like any other `ags` application or use the Nix
+flake. The flake exposes a package named `stew-shell` which provides a binary
+of the same name to run the shell.
+
+## Running
+When bundled, the entrypoint will by start the shell for the first invocation, and
+further invocations of `stew-shell` will send all arguments as an Astal request
+to the shell. You can get a list of supported commands and their usage by running
+the `help` command. You can also execute these commands using `ags request`, but
+you either can only pass a single command name with no arguments, or have to pass
+the command and arguments as a JSON array.
+
+```sh
+# The following assumes the shell is running; e.g. by doing:
+stew-shell &
+ags run . &
+
+# Send the `help` command and format the output
+stew-shell help
+ags request help
+ags request '["help"]'
+
+# Show the application launcher
+stew-shell toggle-launcher
+ags request toggle-launcher
+ags request '["toggle-launcher"]'
+```
+
+At the time of writing, this is the current help output:
+
+```json
+{
+  "help": {
+    "usage": "help",
+    "description": "Show this help message"
+  },
+  "environ": {
+    "usage": "environ",
+    "description": "Return the current contents of the process environment as reported by GLib"
+  },
+  "toggle-settings-menu": {
+    "usage": "toggle-settings-menu",
+    "description": "Toggle the quick settings dash menu"
+  },
+  "toggle-launcher": {
+    "usage": "toggle-launcher",
+    "description": "Toggle the application launcher menu"
+  },
+  "lock": {
+    "usage": "lock",
+    "description": "Lock the session"
+  },
+  "unlock": {
+    "usage": "unlock",
+    "description": "Unlock the session"
+  }
+}
+```
+
+> [!CAUTION]
+> The `unlock` command will be rejected unless the current instance name is `dev`.
+
 ## Organization
 The project is organized into two primary parts: [components], and [request handlers].
 
