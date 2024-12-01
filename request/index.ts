@@ -3,6 +3,7 @@ import Help from "./help"
 import Environ from "./environ"
 import ToggleDash from "./toggle-dash"
 import ToggleLauncher from "./toggle-launcher"
+import { LockSession, UnlockSession } from "./lock"
 
 
 // Place new request handlers in the list below. The gunk afterwards just
@@ -14,6 +15,8 @@ const requestHandlers: Map<string, RequestHandler> = [
   new Environ(),
   new ToggleDash(),
   new ToggleLauncher(),
+  new LockSession(),
+  new UnlockSession(),
 ].reduce((m, v) => {
   m.set(v.name, v)
   return m

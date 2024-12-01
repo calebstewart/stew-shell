@@ -1,0 +1,10 @@
+@use "../../../style/gtk.scss" as *;
+
+window.LockerShade {
+  animation: fade-in 1s ease-in forwards 0s 1;
+
+  @keyframes fade-in {
+    0% { background: gtkalpha($bg-color, 0.5); }
+    100% { background-color: $bg-color; }
+  }
+}

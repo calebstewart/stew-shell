@@ -26,20 +26,45 @@ when invoked.
 ### Components
 Components are the building blocks which make up the shell itself. The root component
 is the main entrypoint for the AGS application, and is defined as the default export
-of [components/index.ts]. There, we setup any global windows that are necessary, and
-also connect signal handlers for creating windows specific to monitors.
+of [components/index.ts]. In the context of the shell, the windows don't need to be
+"stored" anywhere once they are created and shown. They will be tracked by GLib as
+long as the window exists and is displayed. It is common for setup functions to
+return the primary or root window, but that return value is often ignored.
 
-If you are adding a new global component (e.g. a popup window), then it will be
-created in the `Setup()` function. It can then be toggled as needed by other
-components (or through a request handler).
+If you need a popup window, which behaves similar to a context menu, you can use
+the the [PopupWindow] class which wraps an `Astal.Window` with a second invisible
+"closer" window. When the escape key is pressed or any button press is received
+on the fullscreen, invisible "closer" window, the primary popup will be hidden.
+This is used internally for things like the application launcher or the quick
+settings window.
 
-If you are adding a component which should exist for each monitor, then you will
-need to instantiate it twice. The first time is in the initialization loop over
-`App.get_monitors()` within `Setup()`. This creates the initial windows for
-monitors that exist during initialization. Next, you'll need to create the
-window again within the `monitor-added` signal handler. Lastly, you'll need
-to track the window's existence somewhere, and destroy it on `monitor-removed`.
-For the status bar, this is done using a simple `Map<Monitor, Widget>` variable.
+If you need windows to spawn for every monitor including future monitors, and be
+destroyed during hot-plug of monitors, then you can use the [RegisterPerMonitorWindows]
+function. This function will take in a `Map<Monitor, Widget>` and a widget constructor.
+The map is used as a registery mapping each GDK monitor to the corresponding widget.
+The constructor function is executed for each monitor. Initially, it is executed
+and the registry filled per existing monitors in the `App`, then signals are
+connected for `monitor-added` and `monitor-removed` to handle invokign the constructor
+at the appropriate times. If you need to run code on a window when a monitor is
+removed, you can use the `onDestroy` property of the window during construction.
+The window is automatically destroy when it's associated monitor is removed.
+
+## Assumptions
+This is not a generic desktop shell UI, so there are some assumptions made based
+on my own situation, and the fact that I can change the code if my situation
+changes.
+
+1. There are valid ethernet adapters (at least one).
+2. There are valid wireless adapters (at least one).
+3. There is a bluetooth adapter.
+4. You have my [Embermug Service] installed and running.
+5. You are using Hyprland as your compositor.
+
+These are not generally speaking required. You could modify the code to disable
+or remove the bar components that require certain devices. You could delete the
+Ember Mug component completely. You could even write Sway-compatible workspaces
+and active window components, and replace the Hyprland dependency. Go for it!
+But I'm not going to support it. Sorry. :)
 
 [AGS]: https://github.com/Aylur/ags
 [Astal]: https://github.com/Aylur/astal
@@ -49,3 +74,5 @@ For the status bar, this is done using a simple `Map<Monitor, Widget>` variable.
 [request handlers]: ./request/
 [request/index.ts]: ./request/index.ts
 [RequestHandler]: ./request/request.ts
+[PopupWindow]: ./components/popup/index.ts
+[RegisterPerMonitorWindows]: ./components/per-monitor/index.ts

@@ -2,19 +2,19 @@ import { Astal, App, Gtk, Gdk } from "astal/gtk3"
 
 import { ActiveClient, Workspaces } from "../hyprland"
 import { SettingsMenuButton } from "../settings-menu"
-import Embermug, { TemperatureUnit } from "../embermug"
-import Bluetooth from "./bluetooth"
 import { ListeningIndicator } from "./privacy"
 import { WiredStatus, WirelessStatus } from "./network"
-
+import Embermug, { TemperatureUnit } from "../embermug"
+import Bluetooth from "./bluetooth"
 import Clock from "./clock"
 import TrayItems from "./tray"
-
+import RegisterPerMonitorWindows from "../per-monitor"
 import style from "./style/bar.scss"
 
 export { default as BarItem } from "./item"
 
 const Anchor = Astal.WindowAnchor
+const bar_registry = new Map<Gdk.Monitor, Gtk.Widget>()
 
 function StartBlock(_monitor: Gdk.Monitor, index: number) {
   return <box className="StartBlock" halign={Gtk.Align.START}>
@@ -41,7 +41,7 @@ function EndBlock(_monitor: Gdk.Monitor, _index: number) {
   </box>
 }
 
-export default function SetupBar(monitor: Gdk.Monitor, index: number) {
+export function SetupBar(monitor: Gdk.Monitor, index: number) {
   return <window
     className={`Bar Monitor${index}`}
     gdkmonitor={monitor}
@@ -55,4 +55,8 @@ export default function SetupBar(monitor: Gdk.Monitor, index: number) {
       {EndBlock(monitor, index)}
     </centerbox>
   </window>
+}
+
+export default function SetupBars() {
+  return RegisterPerMonitorWindows(bar_registry, SetupBar)
 }
