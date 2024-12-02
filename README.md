@@ -7,6 +7,72 @@ be useful to someone besides myself.
 
 ![Example](https://github.com/user-attachments/assets/0b9f6389-a379-44c9-a9ec-e943ff3bfa40)
 
+## Components
+
+### Status Bar
+A separate status bar will be created per-monitor. This includes hot-plugged monitors.
+If a monitor is removed, the bar will be destroy. If a new monitor is connected, a new
+bar will be created. Each bar has three sections: start, center, and end. The starting
+section is on the left side. The end is on the right side. The center is well... in the
+center...
+
+#### Hyprland Active Client
+![image](https://github.com/user-attachments/assets/3093d31b-bca7-4116-b355-26a6f991a887)
+
+The starting section contains only a Hyprland Active Client widget. The widget displays
+the most recent active client for the monitor, and it's associated icon. When the user
+clicks on the application icon, it will toggle the application launcher popup. When
+there are no clients in the workspace, the widget displays a `display` icon and prints
+`Monitor {index}`.
+
+#### Hyprland Workspace Switcher
+![image](https://github.com/user-attachments/assets/01f0a3c3-e231-4782-9233-9ba4293a8faa)
+
+The center section contains only the Hyprland Workspace Switcher. The switcher displays
+the existing workspaces for the current monitor. Workspaces for a monitor are identified
+by the monitor index. For monitor `X`, the valid workspaces are `X*10 + 1` to `X*10 + 9`.
+The workspaces will be displayed as `1` through `9` visually. Clicking a workspace will
+focus that workspace. This naming scheme aligns with the Hyprsplit plugin.
+
+#### System Tray
+![image](https://github.com/user-attachments/assets/0544a599-3009-447c-9759-8fc9633ffd3f)
+
+The system tray is the set of widgets on the right side of the bar. It consists of a
+number of `BarItem` widgets and the hamburger menu button. The bar is automatically
+populated with tray items from applications implementing the [StatusNotifierItem]
+protocol. Each item displays only an icon until hovered unless otherwise noted. If
+clicked after hovering, the state will be locked until clicked again. The following
+icons are also shown contextually:
+
+1. Clock: this widget displays the time and timezone. It is locked visible by
+   default, but can be collapsed with a click. The visibility syncs between all
+   monitors.
+2. Network (wireless/wired): this widget displays the active network/address of
+   the wireless and wired networks.
+3. Bluetooth: display the active device or the number of active devices, and the
+   icon shows the powered state of the bluetooth adapter. The label will auto-reveal
+   if a new device is connected or disconnected. Right-clicking shows the existing
+   paired devices, and clicked on a device connects/disconnects that device.
+4. Ember Mug: display the status of the connected ember mug. This requires the
+   [Embermug] service to be installed and running. It will auto-reveal when the
+   mug turns on, and has liquid. It will remain visible until the liquid is gone.
+5. Privacy Indicators: a video and microphone privacy indicator will display and
+   flash when there are PipeWire recording sessions active. If there is only one
+   recording session, the name will be shown in the label. Otherwise, the number
+   of recording sessions will be shown. Right-clicking on the icon will display
+   the full name and description of all recording sessions. For *only the audio
+   icon*, clicking the icon will toggle the mute status of the default microphone
+   device.
+
+### Application Launcher
+![image](https://github.com/user-attachments/assets/3ed995b3-8ac5-472c-8ad2-b2c58d357561)
+
+### Notification Daemon
+![image](https://github.com/user-attachments/assets/bbf49a5a-dbe1-4d58-9184-c041ea0e2d7e)
+
+### Quick Settings Menu
+![image](https://github.com/user-attachments/assets/10b14fd1-4886-48d4-bf40-8b1e7348175d)
+
 ## Building
 When developing, you can simply run `ags run .` within the repository to execute
 the shell. It should function within any Hyprland environment. You will just have
@@ -146,3 +212,4 @@ But I'm not going to support it. Sorry. :)
 [PopupWindow]: ./components/popup/index.ts
 [RegisterPerMonitorWindows]: ./components/per-monitor/index.ts
 [Embermug Service]: https://github.com/calebstewart/go-embermug
+[StatusNotifierItem]: https://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/
