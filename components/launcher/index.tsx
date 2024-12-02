@@ -36,6 +36,14 @@ export function HideLauncherMenu() {
 // The upside is that each application logs it's output to the system
 // journal, and we can retroactively inspect those logs easily by
 // desktop entry name.
+//
+// Generally, when an application is launched, it is launched under
+// a transient SystemD unit named after it's desktop file with the
+// extension ".desktop" replaced with ".service". The service type
+// is 'forking' because we using `gio launch` which will fork, exec
+// the desktop file, and then exit. We use '--collect', so the service
+// will disappear after exiting. If the service failed for some 
+// reason, you can inspect the logs with 'journalctl --user --unit "unit-name"'.
 export function Launch(app: Apps.Application) {
   var app_info = Gio.DesktopAppInfo.new(app.entry)
   if (app_info === null) {
