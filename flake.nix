@@ -38,6 +38,7 @@
           ags.packages.${system}.tray
           ags.packages.${system}.auth
           pkgs.gtk-session-lock.dev
+          pkgs.glib
           # pkgs.fzf
         ];
       };
@@ -51,6 +52,7 @@
           gtk4-layer-shell
           gobject-introspection
           gobject-introspection-unwrapped
+          pkgs.glib
         ]) ++ [
           # includes all Astal libraries
           # ags.packages.${system}.agsFull

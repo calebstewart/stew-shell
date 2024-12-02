@@ -88,23 +88,14 @@ export function SetupLockerShade(monitor: Gdk.Monitor, user_input: Variable<stri
     }}>
   </window> as Gtk.Window
 
-  const quote_stack = new Gtk.Stack({
-    visible: true,
-    transition_type: Gtk.StackTransitionType.CROSSFADE,
-    homogeneous: true,
-    transition_duration: 1000,
-  })
-
-  quote_stack.add_named(<label className="random-quote" label="" />, "empty")
-
-  random_quotes.forEach((quote, index) => {
-    quote_stack.add_named(
-      <label className="random-quote" label={quote} />,
-      String(index),
-    )
-  })
-
-  quote_stack.visible_child_name = "empty"
+  const quote_stack = <stack
+    transition_type={Gtk.StackTransitionType.CROSSFADE}
+    homogeneous={true}
+    transition_duration={1000}
+    visible_child_name="empty">
+    <label className="random-quote" label="" name="empty" />
+    {random_quotes.map((quote, index) => <label className="random-quote" label={quote} name={String(index)} />)}
+  </stack> as Gtk.Stack
 
   const timers = new Array<AstalIO.Time>()
   timers.push(timeout(3000 + (Math.random() * 2000), () => {

@@ -1,4 +1,4 @@
-import { Variable, bind } from "astal"
+import { Variable, bind, Gio, GLib } from "astal"
 import { Astal, App, Gtk } from "astal/gtk3"
 import Apps from "gi://AstalApps"
 
@@ -26,9 +26,52 @@ export function HideLauncherMenu() {
   App.get_window(LauncherName)?.hide()
 }
 
+// This is a bit of a hack. It resolves the desktop file, and then
+// uses `systemd-run` to invoke `gio launch` to run the desktop
+// file. This isn't ideal, but the alternative is having all applications
+// started by the launcher tied to the shell process, and dying when the
+// shell exits. This is inconvenient in practice, and I havne't found a
+// way to get around it using the Gio.DesktopAppInfo interface directly.
+//
+// The upside is that each application logs it's output to the system
+// journal, and we can retroactively inspect those logs easily by
+// desktop entry name.
 export function Launch(app: Apps.Application) {
-  app.launch()
-  HideLauncherMenu()
+  var app_info = Gio.DesktopAppInfo.new(app.entry)
+  if (app_info === null) {
+    app_info = Gio.DesktopAppInfo.new(`${app.entry}.desktop`)
+  }
+  if (app_info === null) {
+    app_info = Gio.DesktopAppInfo.new(app.name)
+  }
+  if (app_info === null) {
+    app_info = Gio.DesktopAppInfo.new(`${app.name}.desktop`)
+  }
+  if (app_info === null) {
+    app_info = app.get_app()
+  }
+
+  if (app_info === null) {
+    return
+  }
+
+  const file = Gio.File.new_for_path(app_info.get_filename()!)
+  const basename = (file.get_basename()!).split(".", 2)[0]
+  const args = [
+    "systemd-run",
+    "--user",
+    `--unit=${basename}`,
+    `--description=${app.get_description()}`,
+    "--collect",
+    "--same-dir",
+    "--service-type=forking",
+    "gio", "launch", file.get_path()!,
+  ]
+
+  Gio.Subprocess.new(
+    args,
+    Gio.SubprocessFlags.NONE,
+  ).wait(null)
 }
 
 export interface ApplicationButtonProps {
@@ -38,7 +81,10 @@ export interface ApplicationButtonProps {
 export function ApplicationButton({ application }: ApplicationButtonProps) {
   return <button
     className="App"
-    onClicked={() => Launch(application)}>
+    onClicked={() => {
+      Launch(application)
+      HideLauncherMenu()
+    }}>
     <box>
       <icon icon={bind(application, "icon_name").as(String)} />
       <box valign={Gtk.Align.CENTER} vertical>

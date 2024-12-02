@@ -57,7 +57,7 @@ export function MediaPlayer({ player }: MediaPlayerProps) {
           label={bind(player, "title").as(t => t || "Unknown Track")} />
         <icon
           className="player-icon"
-          icon={bind(player, "entry").as(e => Astal.Icon.lookup_icon(e) ? e : "audio-x-generic-symbolic")} />
+          icon={bind(player, "entry").as(e => Astal.Icon.lookup_icon(e) ? (e || "audio-x-generic-symbolic") : "audio-x-generic-symbolic")} />
         <button
           className="player-close"
           visible={bind(player, "can_quit")}
