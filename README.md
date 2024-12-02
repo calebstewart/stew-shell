@@ -1,4 +1,4 @@
-# Caleb Stewart's Wayland Desktop Shell
+# Hyprland Desktop Shell
 This code is open source for no good reason. It implements my custom desktop shell UI
 using [AGS] and [Astal]. The shell is running on top of [GJS] under the hood. It
 should work in any Hyprland environment, but I do not intend to support it for anyone
