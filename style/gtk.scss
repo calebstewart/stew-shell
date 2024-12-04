@@ -10,6 +10,18 @@
   @return string.unquote("shade(#{$c}, #{$a})");
 }
 
+@function lighter($c) {
+  @return string.unquote("lighter(#{$c})")
+}
+
+@function darker($c) {
+  @return string.unquote("darker(#{$c})")
+}
+
+@function mix($c1, $c2, $percent) {
+  @return string.unquote("mix(#{$c1},#{$c2},#{$percent})")
+}
+
 // Define some useful aliases of CSS variables in GTK themes
 $fg-color: #{"@theme_fg_color"};
 $bg-color: #{"@theme_bg_color"};

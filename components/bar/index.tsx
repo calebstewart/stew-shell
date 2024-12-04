@@ -9,6 +9,7 @@ import Bluetooth from "./bluetooth"
 import Clock from "./clock"
 import TrayItems from "./tray"
 import RegisterPerMonitorWindows from "../per-monitor"
+import { NotificationDrawerButton } from "../notifications"
 import style from "./style/bar.scss"
 
 export { default as BarItem } from "./item"
@@ -37,6 +38,7 @@ function EndBlock(_monitor: Gdk.Monitor, _index: number) {
     {WirelessStatus()}
     {PrivacyIndicators()}
     {Clock()}
+    {NotificationDrawerButton()}
     {SettingsMenuButton()}
   </box>
 }

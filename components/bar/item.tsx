@@ -4,6 +4,7 @@ import { Gtk, Gdk } from "astal/gtk3"
 
 export interface BarItemProps {
   className: string | Binding<string>,
+  child?: JSX.Element | undefined,
   children?: JSX.Element | JSX.Element[],
   reveal?: boolean | Binding<boolean>,
   onButtonReleaseEvent?: (eventbox: Gtk.EventBox, event: Gdk.Event) => void,
@@ -21,7 +22,7 @@ export function ToggleForButtonEvent(event: Gdk.Event, v: Variable<boolean>, but
   return !current
 }
 
-export default function BarItem({ className, children, reveal, onButtonReleaseEvent, onDestroy }: BarItemProps) {
+export default function BarItem({ className, child, children, reveal, onButtonReleaseEvent, onDestroy }: BarItemProps) {
   if (reveal === false || reveal === true) {
     reveal = bind(Variable(reveal))
   }
@@ -39,6 +40,10 @@ export default function BarItem({ className, children, reveal, onButtonReleaseEv
 
   if (!Array.isArray(children)) {
     children = [children]
+  }
+
+  if (child !== undefined) {
+    children = [child, ...children]
   }
 
   if (children.length == 0) {

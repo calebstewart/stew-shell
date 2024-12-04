@@ -1,5 +1,7 @@
+import SetupNotificationPopup from "./popup"
+import SetupNotificationDrawer from "./drawer"
+
 export {
-  default,
   DisableNotificationPopup,
   DoNotDisturb
 } from "./popup"
@@ -16,3 +18,12 @@ export {
 export {
   default as NotificationCache
 } from "./cache"
+
+export {
+  NotificationDrawerButton
+} from "./drawer"
+
+export default function SetupNotifications() {
+  SetupNotificationPopup()
+  SetupNotificationDrawer()
+}

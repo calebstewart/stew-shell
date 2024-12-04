@@ -75,6 +75,19 @@ window.Bar {
     }
   }
 
+  .NotificationDrawer {
+    color: $fg-color;
+  }
+
+  .NotificationDrawer.has-notifications {
+    animation: notification-highlight 0.5s forwards ease-in 0s 1 normal;
+
+    @keyframes notification-highlight {
+      0% { color: $fg-color; }
+      100% { color: mix($fg-color, blue, 0.4); }
+    }
+  }
+
   .PrivacyIndicator.unmuted {
     animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
 

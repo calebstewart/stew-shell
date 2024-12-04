@@ -1,5 +1,6 @@
 import { Variable, bind } from "astal"
 import { Astal, App, Gdk, Gtk, Widget } from "astal/gtk3"
+import RegisterPerMonitorWindows from "../per-monitor"
 
 const Anchor = Astal.WindowAnchor
 
@@ -39,6 +40,25 @@ export function ActivePopup() {
   return VisiblePopup.get()
 }
 
+export function SetupPopups() {
+  RegisterPerMonitorWindows(
+    new Map<Gdk.Monitor, Gtk.Widget>(),
+    (monitor, index) => {
+      return <window
+        name={`PopupCloser${index}`}
+        className="PopupCloser"
+        namespace="PopupCloser"
+        layer={Astal.Layer.TOP}
+        visible={bind(VisiblePopup).as((v) => v !== null)}
+        application={App}
+        gdkmonitor={monitor}
+        anchor={Anchor.LEFT | Anchor.RIGHT | Anchor.TOP | Anchor.BOTTOM}>
+        <eventbox onButtonReleaseEvent={() => VisiblePopup.set(null)} />
+      </window>
+    },
+  )
+}
+
 export function PopupWindow(windowprops: PopupWindowProps) {
   const { onKeyPressEvent, name, child, application, layer, exclusivity, ...props } = windowprops
   const hideOnEscape = (_w: Widget.Window, event: Gdk.Event) => {
@@ -75,28 +95,9 @@ export function PopupWindow(windowprops: PopupWindowProps) {
     {child}
   </window> as Gtk.Window
 
-  // The closer window is responsible for intercepting any button press events
-  // and hiding the primary popup window. This makes the window "feel" like a popup
-  // menu even though it isn't technically. We use inline CSS to make the window
-  // invisible. We could do it in our SCSS file, but since PopupWindow is a utility,
-  // it feels nicer to be "self-contained".
-  const closer = <window
-    name={`${name}Closer`}
-    className={`PopupCloser ${name}Closer`}
-    namespace="PopupCloser"
-    layer={Astal.Layer.TOP}
-    visible={bind(window, "visible")}
-    application={application}
-    anchor={Anchor.LEFT | Anchor.RIGHT | Anchor.TOP | Anchor.BOTTOM}>
-    <eventbox onButtonReleaseEvent={() => {
-      HidePopup(name)
-    }} />
-  </window>
-
   // Ensure the closer is destroyed when the popup is destroyed
   window.connect("destroy", () => {
     HidePopup(name)
-    closer.destroy()
   })
 
   return window

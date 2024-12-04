@@ -20,19 +20,23 @@ export default class NotificationCache implements Subscribable {
   }
 
   public show(notif: Notifd.Notification, useTimeout: boolean = true) {
-    // Variable controlling if the notification is visible
-    const reveal = Variable(true)
+    // Show the notification for DEFAULT_POPUP_TIMEOUT milliseconds, and
+    // then hide the notification again.
+    const timer = timeout(DEFAULT_POPUP_TIMEOUT)
+    const reveal = Variable(true).observe(timer, "now", () => false)
 
-    // Our notification wrapped in a revealer. The revealer is initially
-    // revealed. On dismiss or timeout, the revealer hides the child, and
-    // after the animation is finished and the child is hidden, the notification
-    // is removed from the cache.
     const item = <revealer
+      onDestroy={() => {
+        reveal.drop()
+        timer.cancel()
+      }}
       reveal_child={bind(reveal)}
       transition_type={Gtk.RevealerTransitionType.SLIDE_DOWN}>
-      <Notification notification={notif} onDismissed={() => reveal.set(false)} />
+      <Notification notification={notif} onDismissed={() => notif.dismiss()} />
     </revealer> as Gtk.Revealer
 
+    // When the child is finished being hidden, remove it from the cache. This
+    // ensures that the user sees the full animation before it is removed.
     bind(item, "child_revealed").subscribe((child_revealed) => {
       if (!child_revealed) {
         item.destroy()

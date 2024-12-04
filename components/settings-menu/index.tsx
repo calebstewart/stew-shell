@@ -44,8 +44,6 @@ export default function SetupSettingsMenu() {
       <AudioControls />
       <Gtk.Separator visible />
       <MediaPlayers />
-      <Gtk.Separator visible />
-      <NotificationList />
     </box>
   </PopupWindow>
 }

@@ -1,6 +1,5 @@
 import { Variable, bind } from "astal"
 import { App, Gtk, Astal, Gdk } from "astal/gtk3"
-import { bind } from "astal/binding"
 import Notifd from "gi://AstalNotifd"
 import Hyprland from "gi://AstalHyprland"
 
@@ -38,7 +37,6 @@ export default function SetupNotificationPopup() {
   const gdkmonitor = bind(Hyprland.get_default(), "focused_monitor").as((hm) => (
     GetGdkMonitor(hm)
   ))
-
 
   return <window
     name={NotificationPopupName}
