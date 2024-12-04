@@ -62,23 +62,25 @@ export function Launch(app: Apps.Application) {
     return
   }
 
-  const file = Gio.File.new_for_path(app_info.get_filename()!)
-  const basename = (file.get_basename()!).split(".", 2)[0]
-  const args = [
-    "systemd-run",
-    "--user",
-    `--unit=${basename}`,
-    `--description=${app.get_description()}`,
-    "--collect",
-    "--same-dir",
-    "--service-type=forking",
-    "gio", "launch", file.get_path()!,
-  ]
+  app_info.launch([], null)
 
-  Gio.Subprocess.new(
-    args,
-    Gio.SubprocessFlags.NONE,
-  ).wait(null)
+  // const file = Gio.File.new_for_path(app_info.get_filename()!)
+  // const basename = (file.get_basename()!).split(".", 2)[0]
+  // const args = [
+  //   "systemd-run",
+  //   "--user",
+  //   `--unit=${basename}`,
+  //   `--description=${app.get_description()}`,
+  //   "--collect",
+  //   "--same-dir",
+  //   "--service-type=forking",
+  //   "gio", "launch", file.get_path()!,
+  // ]
+
+  // Gio.Subprocess.new(
+  //   args,
+  //   Gio.SubprocessFlags.NONE,
+  // ).wait(null)
 }
 
 export interface ApplicationButtonProps {
