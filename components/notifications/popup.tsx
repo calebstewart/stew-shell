@@ -1,8 +1,11 @@
-import { Variable } from "astal"
-import { App, Gtk, Astal } from "astal/gtk3"
+import { Variable, bind } from "astal"
+import { App, Gtk, Astal, Gdk } from "astal/gtk3"
 import { bind } from "astal/binding"
 import Notifd from "gi://AstalNotifd"
+import Hyprland from "gi://AstalHyprland"
+
 import NotificationCache from "./cache"
+import { GetGdkMonitor } from "../hyprland"
 import { PopupWindow } from "../popup"
 import style from "./style/popup.scss"
 
@@ -30,10 +33,18 @@ export default function SetupNotificationPopup() {
     }
   )
 
+  // Bind the monitor for the window to the currently focused Hyprland
+  // monitor, and map it back to the GDK monitor.
+  const gdkmonitor = bind(Hyprland.get_default(), "focused_monitor").as((hm) => (
+    GetGdkMonitor(hm)
+  ))
+
+
   return <window
     name={NotificationPopupName}
     className={NotificationPopupName}
     namespace={NotificationPopupName}
+    gdkmonitor={gdkmonitor}
     layer={Astal.Layer.OVERLAY}
     exclusivity={Astal.Exclusivity.NORMAL}
     application={App}

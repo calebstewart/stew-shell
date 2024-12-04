@@ -23,6 +23,19 @@ export function GetHyprlandMonitor(gm: Gdk.Monitor): Hyprland.Monitor {
   throw new Error("GDK monitor does not map to a Hyprland monitor")
 }
 
+export function GetGdkMonitor(hm: Hyprland.Monitor): Gdk.Monitor {
+  const display = Gdk.Display.get_default()
+  const screen = display?.get_default_screen()
+
+  for (let i = 0; i < (display?.get_n_monitors() || 0); i++) {
+    if (screen?.get_monitor_plug_name(i) === hm.name) {
+      return display!.get_monitor(i)!
+    }
+  }
+
+  throw new Error("GDK monitor does not map to a Hyprland monitor")
+}
+
 export function ActiveClient(monitorIndex: number) {
   const LastWorkspaceID = Variable(String(1 + monitorIndex * 10))
 
