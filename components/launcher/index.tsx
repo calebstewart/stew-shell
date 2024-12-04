@@ -46,6 +46,7 @@ export function Launch(app: Apps.Application) {
   const args = [
     "systemd-run",
     "--user",
+    `--slice=app`,
     `--unit=${unit_name}`,
     `--description=${app.get_description()}`,
     "--same-dir",
