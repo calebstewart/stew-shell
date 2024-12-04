@@ -1,7 +1,7 @@
 import { Astal, App, Gtk } from "astal/gtk3"
 
 import { NotificationList, DisableNotificationPopup } from "../notifications"
-import { PopupWindow } from "../popup"
+import { PopupWindow, TogglePopup, HidePopup, ShowPopup } from "../popup"
 import QuickSettings from "./quick-settings"
 import AudioControls from "./audio-controls"
 import MediaPlayers from "./media-players"
@@ -17,16 +17,15 @@ export function SettingsMenuButton() {
 }
 
 export function ToggleSettingsMenu() {
-  App.toggle_window(SettingsMenuName)
-  return App.get_window(SettingsMenuName)?.visible
+  return TogglePopup(SettingsMenuName)
 }
 
 export function HideSettingsMenu() {
-  App.get_window(SettingsMenuName)?.hide()
+  HidePopup(SettingsMenuName)
 }
 
 export function ShowSettingsMenu() {
-  App.get_window(SettingsMenuName)?.show()
+  ShowPopup(SettingsMenuName)
 }
 
 export default function SetupSettingsMenu() {

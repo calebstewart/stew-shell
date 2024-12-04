@@ -2,7 +2,7 @@ import { Variable, bind, Gio, GLib } from "astal"
 import { Astal, App, Gtk } from "astal/gtk3"
 import Apps from "gi://AstalApps"
 
-import { PopupWindow } from "../popup"
+import { PopupWindow, TogglePopup, ShowPopup, HidePopup } from "../popup"
 import style from "./style/launcher.scss"
 
 // Export a global instance of the application list
@@ -18,12 +18,11 @@ export function IconForClass(apps: Apps.Application[], clazz: string, defaultIco
 }
 
 export function ToggleLauncherMenu() {
-  App.toggle_window(LauncherName)
-  return App.get_window(LauncherName)?.visible
+  return TogglePopup(LauncherName)
 }
 
 export function HideLauncherMenu() {
-  App.get_window(LauncherName)?.hide()
+  HidePopup(LauncherName)
 }
 
 // This is a bit of a hack. It resolves the desktop file, and then

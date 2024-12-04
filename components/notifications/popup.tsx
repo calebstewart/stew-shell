@@ -23,25 +23,25 @@ export const DisableNotificationPopup = Variable(false)
 
 export default function SetupNotificationPopup() {
   const cache = new NotificationCache(notifd)
-  const reveal = Variable.derive([bind(DoNotDisturb), bind(DisableNotificationPopup)], (dnd, disabled) => {
-    return !dnd && !disabled
-  })
+  const reveal = Variable.derive(
+    [bind(DoNotDisturb), bind(DisableNotificationPopup)],
+    (dnd, disabled) => {
+      return !dnd && !disabled
+    }
+  )
 
-  return <PopupWindow
+  return <window
     name={NotificationPopupName}
     className={NotificationPopupName}
     namespace={NotificationPopupName}
+    layer={Astal.Layer.OVERLAY}
+    exclusivity={Astal.Exclusivity.NORMAL}
     application={App}
-    visible={bind(cache).as((widgets) => widgets.length > 0)}
+    visible={bind(reveal)}
     anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
     css={style}>
-    <revealer
-      reveal_child={bind(reveal)}
-      transition_type={Gtk.RevealerTransitionType.SLIDE_DOWN}
-      onDestroy={() => reveal.drop()}>
-      <box vertical>
-        {bind(cache)}
-      </box>
-    </revealer>
-  </PopupWindow>
+    <box vertical>
+      {bind(cache)}
+    </box>
+  </window>
 }

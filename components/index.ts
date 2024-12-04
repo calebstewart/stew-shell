@@ -1,5 +1,3 @@
-import { App, Gtk, Gdk } from "astal/gtk3"
-
 import SetupBars from "./bar"
 import SetupLauncher from "./launcher"
 import SetupLocker from "./locker"

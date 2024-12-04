@@ -39,6 +39,7 @@
           ags.packages.${system}.auth
           pkgs.gtk-session-lock.dev
           pkgs.glib
+          pkgs.polkit
           # pkgs.fzf
         ];
       };
@@ -72,6 +73,7 @@
               ags.packages.${system}.tray
               ags.packages.${system}.auth
               pkgs.gtk-session-lock.dev
+              pkgs.polkit
             ];
           })
         ];

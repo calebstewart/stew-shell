@@ -5,6 +5,7 @@
 @use "../components/notifications/style/popup.scss";
 @use "../components/settings-menu/style/settings-menu.scss";
 @use "../components/locker/style/main.scss";
+@use "./gtk.scss" as *;
 
 // This is just common in HTML CSS, so it made sense.
 .fa-solid {
@@ -13,4 +14,8 @@
 
 menu > menuitem > box > icon {
   margin-right: 0.5rem;
+}
+
+window.PopupCloser {
+  background: gtkalpha($bg-color, 0.8);
 }
