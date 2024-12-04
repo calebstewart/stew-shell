@@ -25,62 +25,38 @@ export function HideLauncherMenu() {
   HidePopup(LauncherName)
 }
 
-// This is a bit of a hack. It resolves the desktop file, and then
-// uses `systemd-run` to invoke `gio launch` to run the desktop
-// file. This isn't ideal, but the alternative is having all applications
-// started by the launcher tied to the shell process, and dying when the
-// shell exits. This is inconvenient in practice, and I havne't found a
-// way to get around it using the Gio.DesktopAppInfo interface directly.
+// This will start the given application presuming it has a valid
+// desktop entry. It will start the application without using the
+// 'launch()' method. This is because the launch method spawns the
+// application as a subprocess of the shell which isn't ideal.
 //
-// The upside is that each application logs it's output to the system
-// journal, and we can retroactively inspect those logs easily by
-// desktop entry name.
-//
-// Generally, when an application is launched, it is launched under
-// a transient SystemD unit named after it's desktop file with the
-// extension ".desktop" replaced with ".service". The service type
-// is 'forking' because we using `gio launch` which will fork, exec
-// the desktop file, and then exit. We use '--collect', so the service
-// will disappear after exiting. If the service failed for some 
-// reason, you can inspect the logs with 'journalctl --user --unit "unit-name"'.
+// Instead, we use `systemd-run` to execute 'gio launch [path/to/app.desktop]`
+// to execute the application. The name of the transient unit will be:
+// 'app-{desktop-file-basename}-{random-six-chars}.service'. This is in
+// compliance with the specification here:  https://systemd.io/DESKTOP_ENVIRONMENTS/
 export function Launch(app: Apps.Application) {
-  var app_info = Gio.DesktopAppInfo.new(app.entry)
-  if (app_info === null) {
-    app_info = Gio.DesktopAppInfo.new(`${app.entry}.desktop`)
-  }
-  if (app_info === null) {
-    app_info = Gio.DesktopAppInfo.new(app.name)
-  }
-  if (app_info === null) {
-    app_info = Gio.DesktopAppInfo.new(`${app.name}.desktop`)
-  }
-  if (app_info === null) {
-    app_info = app.get_app()
-  }
+  const entry = Gio.DesktopAppInfo.new(app.entry)
+  const basename = app.entry.replace(/\.desktop$/, "")
+  const identifier = [1, 2, 3, 4, 5, 6].map((_) => {
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    return charset[Math.floor(Math.random() * charset.length)]
+  }).reduce((prev, current) => prev + current)
+  const unit_name = `app-${basename}-${identifier}`
 
-  if (app_info === null) {
-    return
-  }
+  const args = [
+    "systemd-run",
+    "--user",
+    `--unit=${unit_name}`,
+    `--description=${app.get_description()}`,
+    "--same-dir",
+    "--service-type=forking",
+    "gio", "launch", entry.get_filename()!,
+  ]
 
-  app_info.launch([], null)
-
-  // const file = Gio.File.new_for_path(app_info.get_filename()!)
-  // const basename = (file.get_basename()!).split(".", 2)[0]
-  // const args = [
-  //   "systemd-run",
-  //   "--user",
-  //   `--unit=${basename}`,
-  //   `--description=${app.get_description()}`,
-  //   "--collect",
-  //   "--same-dir",
-  //   "--service-type=forking",
-  //   "gio", "launch", file.get_path()!,
-  // ]
-
-  // Gio.Subprocess.new(
-  //   args,
-  //   Gio.SubprocessFlags.NONE,
-  // ).wait(null)
+  Gio.Subprocess.new(
+    args,
+    Gio.SubprocessFlags.NONE,
+  ).wait(null)
 }
 
 export interface ApplicationButtonProps {
