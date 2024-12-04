@@ -1,4 +1,4 @@
-import { Gio, GLib, bind } from "astal"
+import { Gio, GLib } from "astal"
 import { Astal, Gtk } from "astal/gtk3"
 import Notifd from "gi://AstalNotifd"
 
@@ -59,7 +59,7 @@ export default function Notification({
   const appName = desktopEntry?.get_name() || notification.app_name
 
   return <eventbox
-    className={bind(notification, "urgency").as((u) => `Notification ${UrgencyToString(u)}`)}>
+    className={`Notification ${UrgencyToString(notification.urgency)}`}>
     <box vertical>
       <box className="header">
         {icon && <icon
