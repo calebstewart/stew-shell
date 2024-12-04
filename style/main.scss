@@ -17,5 +17,5 @@ menu > menuitem > box > icon {
 }
 
 window.PopupCloser {
-  background: gtkalpha($bg-color, 0.8);
+  background: transparent; // gtkalpha($bg-color, 0.8);
 }

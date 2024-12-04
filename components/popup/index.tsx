@@ -41,22 +41,22 @@ export function ActivePopup() {
 }
 
 export function SetupPopups() {
-  RegisterPerMonitorWindows(
-    new Map<Gdk.Monitor, Gtk.Widget>(),
-    (monitor, index) => {
-      return <window
-        name={`PopupCloser${index}`}
-        className="PopupCloser"
-        namespace="PopupCloser"
-        layer={Astal.Layer.TOP}
-        visible={bind(VisiblePopup).as((v) => v !== null)}
-        application={App}
-        gdkmonitor={monitor}
-        anchor={Anchor.LEFT | Anchor.RIGHT | Anchor.TOP | Anchor.BOTTOM}>
-        <eventbox onButtonReleaseEvent={() => VisiblePopup.set(null)} />
-      </window>
-    },
-  )
+  // RegisterPerMonitorWindows(
+  //   new Map<Gdk.Monitor, Gtk.Widget>(),
+  //   (monitor, index) => {
+  //     return <window
+  //       name={`PopupCloser${index}`}
+  //       className="PopupCloser"
+  //       namespace="PopupCloser"
+  //       layer={Astal.Layer.TOP}
+  //       visible={bind(VisiblePopup).as((v) => v !== null)}
+  //       application={App}
+  //       gdkmonitor={monitor}
+  //       anchor={Anchor.LEFT | Anchor.RIGHT | Anchor.TOP | Anchor.BOTTOM}>
+  //       <eventbox onButtonReleaseEvent={() => VisiblePopup.set(null)} />
+  //     </window>
+  //   },
+  // )
 }
 
 export function PopupWindow(windowprops: PopupWindowProps) {
@@ -89,6 +89,7 @@ export function PopupWindow(windowprops: PopupWindowProps) {
     name={name}
     layer={Astal.Layer.OVERLAY}
     exclusivity={Astal.Exclusivity.EXCLUSIVE}
+    keymode={Astal.Keymode.EXCLUSIVE}
     onKeyPressEvent={newKeyPressHandler}
     visible={visible}
     application={application}>
