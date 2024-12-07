@@ -6,7 +6,7 @@
 window.NotificationDrawer {
   all: unset;
 
-  .header {
+  .Notifications > .header {
     margin: 1rem 1rem;
 
     &>label {

@@ -16,11 +16,10 @@ export default class NotificationCache implements Subscribable {
   }
 
   public constructor(notifd: Notifd.Notifd) {
-    notifd.connect("notified", (_, id) => this.show(notifd.get_notification(id), true))
-    notifd.connect("resolved", (_, id) => this.delete(id))
+    notifd.connect("notified", (_, id) => this.show(notifd.get_notification(id)))
   }
 
-  public show(notif: Notifd.Notification, useTimeout: boolean = true) {
+  public show(notif: Notifd.Notification) {
     // Show the notification for DEFAULT_POPUP_TIMEOUT milliseconds, and
     // then hide the notification again.
     const timer = timeout(DEFAULT_POPUP_TIMEOUT)
@@ -28,9 +27,14 @@ export default class NotificationCache implements Subscribable {
       console.log("Hiding the notification after timeout")
       return false
     })
+    const resolveId = notif.connect("resolved", () => {
+      console.log("Hiding resolved notification")
+      reveal.set(false)
+    })
 
     const item = <revealer
       onDestroy={() => {
+        notif.disconnect(resolveId)
         reveal.drop()
         timer.cancel()
       }}
