@@ -59,10 +59,11 @@ export default function SetupNotificationDrawer() {
     <box className="Notifications" vertical>
       <centerbox className="header" >
         <label halign={Gtk.Align.START} hexpand label="Notifications" />
-        <box />
+        <box expand />
         <button
           halign={Gtk.Align.END}
-          label="Clear"
+          className="fa-solid"
+          label={"\uf794"}
           onClicked={() => notifd.get_notifications().forEach((n) => n.dismiss())} />
       </centerbox>
       <Gtk.Separator visible />

@@ -18,20 +18,50 @@ window.SettingsMenu {
   }
 
   .SettingsMenuHeader {
-    margin: .5rem;
+    margin: 1rem 1rem;
 
     &>label {
       font-weight: bold;
       font-size: 14pt;
     }
+
+    &> box > button {
+      color: gtkshade($fg-color, 0.8);
+      font-size: 16pt;
+      background: transparent;
+      box-shadow: none;
+      margin-right: 0;
+      padding-right: 0;
+
+      &.dangerous {
+        color: gtkshade($error, 0.8);
+      }
+
+      &.warning {
+        color: gtkshade($warning, 0.8);
+      }
+    }
+
+    &> box > button:hover {
+      color: gtkshade(mix($fg-color, blue, 0.3), 1.2);
+      background: gtkshade($bg-color, 0.9);
+
+      &.dangerous {
+        color: gtkshade($error, 1.2);
+      }
+
+      &.warning {
+        color: gtkshade($warning, 1.2);
+      }
+    }
   }
 
   .QuickSettings > .QuickSettingsControls {
-    margin: 0.5rem;
+    margin: 1rem;
   }
 
   .AudioControls {
-    margin: 0 0.5rem;
+    margin: 0px 1rem 1rem 1rem;
 
     .EndpointControl {
       margin: 0 0.5rem;
@@ -42,6 +72,7 @@ window.SettingsMenu {
 
       .EndpointControlMute > icon {
         margin: 0.5rem 0.5rem;
+        font-size: 14pt;
       }
 
       .EndpointControlMute:not(:hover) {

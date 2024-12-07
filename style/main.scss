@@ -19,3 +19,11 @@ menu > menuitem > box > icon {
 window.PopupCloser {
   background: transparent; // gtkalpha($bg-color, 0.8);
 }
+
+.dangerous {
+  color: $error;
+}
+
+.warning {
+  color: $warning;
+}

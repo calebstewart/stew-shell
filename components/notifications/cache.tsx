@@ -23,7 +23,10 @@ export default class NotificationCache implements Subscribable {
     // Show the notification for DEFAULT_POPUP_TIMEOUT milliseconds, and
     // then hide the notification again.
     const timer = timeout(DEFAULT_POPUP_TIMEOUT)
-    const reveal = Variable(true).observe(timer, "now", () => false)
+    const reveal = Variable(true).observe(timer, "now", () => {
+      console.log("Hiding the notification after timeout")
+      return false
+    })
 
     const item = <revealer
       onDestroy={() => {

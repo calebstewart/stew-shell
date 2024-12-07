@@ -1,3 +1,4 @@
+import { Gio } from "astal"
 import { Astal, App, Gtk, Gdk } from "astal/gtk3"
 
 import { ActiveClient, Workspaces } from "../hyprland"
@@ -45,6 +46,7 @@ function EndBlock(_monitor: Gdk.Monitor, _index: number) {
 
 export function SetupBar(monitor: Gdk.Monitor, index: number) {
   return <window
+    name={`Bar${index}`}
     className={`Bar Monitor${index}`}
     gdkmonitor={monitor}
     exclusivity={Astal.Exclusivity.EXCLUSIVE}

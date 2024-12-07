@@ -7,11 +7,25 @@ window.NotificationDrawer {
   all: unset;
 
   .header {
-    margin: 0.5rem;
+    margin: 1rem 1rem;
 
     &>label {
       font-weight: bold;
       font-size: 14pt;
+    }
+
+    &>button {
+      color: $fg-color;
+      font-size: 16pt;
+      background: transparent;
+      box-shadow: none;
+      margin-right: 0;
+      padding-right: 0;
+    }
+
+    &>button:hover {
+      color: gtkshade($fg-color, 1.2);
+      background: gtkalpha($bg-color, 0.9);
     }
   }
 
