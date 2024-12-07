@@ -1,8 +1,9 @@
-import { Variable, bind, Gio, GLib } from "astal"
+import { Variable, bind, Gio } from "astal"
 import { Astal, App, Gtk } from "astal/gtk3"
 import Apps from "gi://AstalApps"
 
-import { PopupWindow, TogglePopup, ShowPopup, HidePopup } from "../popup"
+import { PopupWindow, TogglePopup, HidePopup } from "@components/popup"
+
 import style from "./style/launcher.scss"
 
 // Export a global instance of the application list
