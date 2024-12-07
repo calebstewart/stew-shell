@@ -1,4 +1,5 @@
 import { GLib } from "astal"
+
 import RequestHandler from "./request"
 
 export default class Environ implements RequestHandler {

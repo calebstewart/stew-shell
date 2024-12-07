@@ -2,6 +2,7 @@ import { Variable, timeout, bind } from "astal"
 import { Gtk } from "astal/gtk3"
 import { Subscribable } from "astal/binding"
 import Notifd from "gi://AstalNotifd"
+
 import Notification from "./notification"
 
 const DEFAULT_POPUP_TIMEOUT = 5000

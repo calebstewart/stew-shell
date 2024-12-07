@@ -1,11 +1,12 @@
-import { Variable, bind } from "astal"
-import { App, Gtk, Widget } from "astal/gtk3"
+import { bind } from "astal"
+import { Gtk } from "astal/gtk3"
 import Binding from "astal/binding"
 import Bluetooth from "gi://AstalBluetooth"
 import Network from "gi://AstalNetwork"
 
-import { ToggleButton, FlowBox, FlowBoxChild } from "../builtin"
-import { DoNotDisturb } from "../notifications"
+import { ToggleButton, FlowBox, FlowBoxChild } from "@components/builtin"
+import { DoNotDisturb } from "@components/notifications"
+
 import { ScreenSaver } from "./screensaver"
 
 const screensaver = new ScreenSaver({
@@ -39,10 +40,6 @@ function DoNotDisturbToggle({ }: {}) {
 }
 
 function IdleInhibitToggle({ }: {}) {
-  const screensaver = new ScreenSaver({
-    application_name: "stew-shell",
-    reason_for_inhibit: "user-requested"
-  })
   // The active state of the toggle is the inverse of the inhibit state, since
   // the label is "Auto-Lock" (implying this should represent the state of
   // the lock, not of the inhibition).

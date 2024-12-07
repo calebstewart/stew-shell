@@ -1,8 +1,9 @@
 import { Variable, bind } from "astal"
 import { Astal, App, Gdk, Gtk, Widget } from "astal/gtk3"
-import RegisterPerMonitorWindows from "../per-monitor"
 
-const Anchor = Astal.WindowAnchor
+// import RegisterPerMonitorWindows from "@components/per-monitor"
+
+// const Anchor = Astal.WindowAnchor
 
 export const VisiblePopup = Variable<string | null>(null)
 

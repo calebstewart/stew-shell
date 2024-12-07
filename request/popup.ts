@@ -1,5 +1,6 @@
+import { ShowPopup, HidePopup, TogglePopup, ActivePopup } from "@components/popup"
+
 import RequestHandler from "./request"
-import { ShowPopup, HidePopup, TogglePopup, ActivePopup } from "../components/popup"
 
 export default class Popup implements RequestHandler {
   public name = "popup"

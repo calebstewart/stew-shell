@@ -1,12 +1,12 @@
 import { Variable, bind } from "astal"
-import { App, Gtk, Astal, Gdk } from "astal/gtk3"
+import { App, Astal } from "astal/gtk3"
 import Notifd from "gi://AstalNotifd"
 import Hyprland from "gi://AstalHyprland"
 
-import NotificationCache from "./cache"
-import { GetGdkMonitor } from "../hyprland"
-import { PopupWindow } from "../popup"
+import { GetGdkMonitor } from "@components/hyprland"
+
 import style from "./style/popup.scss"
+import NotificationCache from "./cache"
 
 const notifd = Notifd.get_default()
 

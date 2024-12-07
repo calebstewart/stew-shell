@@ -4,8 +4,8 @@ import AstalIO from "gi://AstalIO"
 import Auth from "gi://AstalAuth"
 import GtkSessionLock from "gi://GtkSessionLock"
 
-import { Time } from "../bar/clock"
-import RegisterPerMonitorWindows from "../per-monitor"
+import { Time } from "@components/bar/clock"
+import RegisterPerMonitorWindows from "@components/per-monitor"
 
 export const DEFAULT_PAM_SERVICE = "hyprlock"
 
@@ -188,6 +188,36 @@ function lock_session() {
     lock!.new_surface(window, monitor)
     window.show_all()
     return window
+
+    return <window
+      className="LockerShade"
+      namespace="LockerShade"
+      gdkmonitor={monitor}
+      exclusivity={Astal.Exclusivity.EXCLUSIVE}
+      anchor={Anchor.TOP | Anchor.BOTTOM | Anchor.LEFT | Anchor.RIGHT}
+      layer={Astal.Layer.OVERLAY}
+      application={App}
+      visible={true}
+      setup={(w) => lock!.new_surface(w, monitor)}>
+      <revealer
+        transition_type={Gtk.RevealerTransitionType.CROSSFADE}>
+        <centerbox expand homogeneous={true}>
+          <box />
+          <centerbox vertical homogeneous={true}>
+            <box className="LockerHeader">
+              <label
+                className="time"
+                label={bind(Time).as((v) => v.replace(/ .*$/, ""))} />
+            </box>
+            <box className="LockerPrompt">
+            </box>
+            <box>
+            </box>
+          </centerbox>
+          <box />
+        </centerbox>
+      </revealer>
+    </window>
   })
 
   // We start authentication here. This should cause pam to invoke our connected

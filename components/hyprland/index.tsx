@@ -2,7 +2,8 @@ import { Variable } from "astal"
 import { Gtk, Gdk } from "astal/gtk3"
 import { bind } from "astal/binding"
 import Hyprland from "gi://AstalHyprland"
-import { Applications, ToggleLauncherMenu, IconForClass } from "../launcher"
+
+import { Applications, ToggleLauncherMenu, IconForClass } from "@components/launcher"
 
 const hyprland = Hyprland.get_default()
 

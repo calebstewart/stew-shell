@@ -1,16 +1,16 @@
-import { Gio } from "astal"
 import { Astal, App, Gtk, Gdk } from "astal/gtk3"
 
-import { ActiveClient, Workspaces } from "../hyprland"
-import { SettingsMenuButton } from "../settings-menu"
+import { ActiveClient, Workspaces } from "@components/hyprland"
+import { SettingsMenuButton } from "@components/settings-menu"
+import Embermug, { TemperatureUnit } from "@components/embermug"
+import RegisterPerMonitorWindows from "@components/per-monitor"
+import { NotificationDrawerButton } from "@components/notifications"
+
 import PrivacyIndicators from "./privacy"
 import { WiredStatus, WirelessStatus } from "./network"
-import Embermug, { TemperatureUnit } from "../embermug"
 import Bluetooth from "./bluetooth"
 import Clock from "./clock"
 import TrayItems from "./tray"
-import RegisterPerMonitorWindows from "../per-monitor"
-import { NotificationDrawerButton } from "../notifications"
 import style from "./style/bar.scss"
 
 export { default as BarItem } from "./item"

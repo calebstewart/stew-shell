@@ -1,7 +1,15 @@
 import { bind } from "astal"
 
-import BarItem from "../bar/item"
-import EmbermugClient, { ToFahrenheit, ToCelsius, Mug, MugState, MugStateToString } from "./client"
+import { BarItem } from "@components/bar"
+
+import {
+  EmbermugClient,
+  ToFahrenheit,
+  ToCelsius,
+  Mug,
+  MugState,
+  MugStateToString
+} from "./client"
 
 export * from "./client"
 export const Embermug = EmbermugClient.get_default()

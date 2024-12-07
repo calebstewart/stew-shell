@@ -1,7 +1,8 @@
 import { Astal, App, Gtk } from "astal/gtk3"
 
-import { NotificationList, DisableNotificationPopup } from "../notifications"
-import { PopupWindow, TogglePopup, HidePopup, ShowPopup } from "../popup"
+import { DisableNotificationPopup } from "@components/notifications"
+import { PopupWindow, TogglePopup, HidePopup, ShowPopup } from "@components/popup"
+
 import QuickSettings from "./quick-settings"
 import AudioControls from "./audio-controls"
 import MediaPlayers from "./media-players"

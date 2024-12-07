@@ -1,5 +1,7 @@
 import { App } from "astal/gtk3"
-import { SessionLocked } from "../components/locker"
+
+import { SessionLocked } from "@components/locker"
+
 import RequestHandler from "./request"
 
 export class LockSession implements RequestHandler {

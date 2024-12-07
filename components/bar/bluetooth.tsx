@@ -3,9 +3,9 @@ import { Subscribable } from "astal/binding"
 import { Gtk, Gdk } from "astal/gtk3"
 import Bluetooth from "gi://AstalBluetooth"
 
-import { AstalMenu, AstalMenuItem } from "../builtin"
-import BarItem from "./item"
+import { AstalMenu, AstalMenuItem } from "@components/builtin"
 
+import BarItem from "./item"
 import menu_style from "./style/bluetooth-menu.scss"
 
 const bluetooth = Bluetooth.get_default()

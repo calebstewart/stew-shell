@@ -4,7 +4,8 @@ import { bind } from "astal/binding"
 import { timeout } from "astal/time"
 import Wp from "gi://AstalWp"
 
-import { AstalMenu, AstalMenuItem } from "../builtin"
+import { AstalMenu, AstalMenuItem } from "@components/builtin"
+
 import BarItem from "./item"
 
 const wp = Wp.get_default()!

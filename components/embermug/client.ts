@@ -59,7 +59,7 @@ export function ToFahrenheit(t: number): number {
 }
 
 // Embermug client
-export default class EmbermugClient implements Subscribable<Mug> {
+export class EmbermugClient implements Subscribable<Mug> {
   private static _singleton: EmbermugClient | null = null
 
   private mug: Variable<Mug> // Variable holding the current state of the mug

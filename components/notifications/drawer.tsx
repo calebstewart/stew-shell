@@ -1,10 +1,10 @@
 import { bind, Variable } from "astal"
-import Binding from "astal/binding"
 import { App, Astal, Gtk } from "astal/gtk3"
 import Notifd from "gi://AstalNotifd"
 
-import BarItem from "../bar/item"
-import { PopupWindow, TogglePopup } from "../popup"
+import { BarItem } from "@components/bar"
+import { PopupWindow, TogglePopup } from "@components/popup"
+
 import { DisableNotificationPopup } from "./popup"
 import Notification from "./notification"
 

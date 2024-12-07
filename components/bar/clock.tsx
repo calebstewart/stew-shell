@@ -1,5 +1,6 @@
 import { bind } from "astal/binding"
 import { Variable } from "astal"
+
 import BarItem, { ToggleForButtonEvent } from "./item"
 
 const reveal = Variable(true)
