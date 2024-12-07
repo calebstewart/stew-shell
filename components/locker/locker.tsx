@@ -1,13 +1,19 @@
 import { GObject, register, property, signal } from "astal"
 import Auth from "gi://AstalAuth"
 
+export enum State {
+  UNLOCKED,
+}
 
 @register()
 export class Locker extends GObject.Object {
   declare private _pam_connect_ids: number[]
+  declare private _state: State
 
   @property(Boolean)
-  declare public locked: boolean
+  get locked() {
+    return this._state !== State.UNLOCKED
+  }
 
   @property(Auth.Pam)
   declare public pam: Auth.Pam
@@ -18,8 +24,13 @@ export class Locker extends GObject.Object {
   @signal()
   declare session_unlocked: () => void
 
-  public constructor() {
-    super()
+  public constructor(pam: Auth.Pam) {
+    super({
+      pam: pam,
+    } as any)
+
+    this._state = State.UNLOCKED
+    this._pam_connect_ids = []
 
     this._pam_connect_ids.push(
       this.pam.connect("auth-error", (_, msg) => this.pam_auth_error(msg)),
@@ -34,7 +45,6 @@ export class Locker extends GObject.Object {
   public vfunc_dispose() {
     this._pam_connect_ids.forEach((id) => this.pam.disconnect(id))
     this._pam_connect_ids.length = 0
-
   }
 
   private pam_auth_error(msg: string) { }

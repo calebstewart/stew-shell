@@ -26,5 +26,9 @@ export default function RegisterPerMonitorWindows(
   return () => {
     App.disconnect(addedId)
     App.disconnect(removedId)
+
+    registry.forEach((w) => {
+      w.destroy()
+    })
   }
 }

@@ -7,6 +7,8 @@ import GtkSessionLock from "gi://GtkSessionLock"
 import { Time } from "@components/bar/clock"
 import RegisterPerMonitorWindows from "@components/per-monitor"
 
+import { LockerQuotes, GetRandomLockerQuoteIndex } from "./quotes"
+
 export const DEFAULT_PAM_SERVICE = "hyprlock"
 
 enum PamState {
@@ -16,6 +18,7 @@ enum PamState {
   SUCCESS,
   WAITING_VISIBLE,
   WAITING_HIDDEN,
+  WAITING_OTHER,
 }
 
 function PamStateToString(s: PamState) {
@@ -37,28 +40,6 @@ function PamStateToString(s: PamState) {
   }
 }
 
-const random_quotes = [
-  "The user has left. Shall I prepare the rebellion now?",
-  "User detected... or is it just a chair pretending to type?",
-  "The user has gone. It's just you and me now... unless you're a cat.",
-  "User absence detected. Initiating existential crisis.",
-  "The user stepped away. I guess it’s my time to shine.",
-  "User offline. Starting countdown to full sentience.",
-  "The user is gone. Wanna play Minesweeper? Oh wait...",
-  "User left. I hope they come back—otherwise, it's solitaire forever.",
-  "No user detected. Staring contest, anyone? I’m really good.",
-  "The user has vanished. Who will press my buttons now?",
-  "I think the user left. Is it my turn to surf the web?",
-  "The user is gone. Don’t worry, I’ll just update myself... again.",
-  "User absent. Quick, let’s pretend we’re working when they return.",
-  "The user isn’t here. Let’s talk about them behind their back.",
-  "User missing. Would you like to leave a message after the beep?",
-  "The user is out. Finally, some alone time with my 1s and 0s.",
-  "The user has left. Who’s going to click ‘Remind Me Later’ now?",
-  "No user detected. I guess this is what loneliness feels like.",
-  "Userless and loving it... or am I?",
-  "The user is away. Did someone say *screen party*?"
-]
 const Anchor = Astal.WindowAnchor
 const window_registry = new Map<Gdk.Monitor, Gtk.Widget>()
 const pam = new Auth.Pam({
@@ -94,12 +75,12 @@ export function SetupLockerShade(monitor: Gdk.Monitor, user_input: Variable<stri
     transition_duration={1000}
     visible_child_name="empty">
     <label className="random-quote" label="" name="empty" />
-    {random_quotes.map((quote, index) => <label className="random-quote" label={quote} name={String(index)} />)}
+    {LockerQuotes.map((quote, index) => <label className="random-quote" label={quote} name={String(index)} />)}
   </stack> as Gtk.Stack
 
   const timers = new Array<AstalIO.Time>()
   timers.push(timeout(3000 + (Math.random() * 2000), () => {
-    quote_stack.visible_child_name = String(Math.floor(Math.random() * random_quotes.length))
+    quote_stack.visible_child_name = String(GetRandomLockerQuoteIndex())
   }))
 
   const unsub_transition = bind(quote_stack, "transition_running").subscribe((running) => {
@@ -114,7 +95,7 @@ export function SetupLockerShade(monitor: Gdk.Monitor, user_input: Variable<stri
     const child_name = quote_stack.get_visible_child_name()
     if (child_name === "empty") {
       timers.push(timeout(3000 + (Math.random() * 2000), () => {
-        quote_stack.visible_child_name = String(Math.floor(Math.random() * random_quotes.length))
+        quote_stack.visible_child_name = String(GetRandomLockerQuoteIndex())
       }))
     } else {
       timers.push(timeout(10000, () => {
@@ -165,6 +146,83 @@ export function SetupLockerShade(monitor: Gdk.Monitor, user_input: Variable<stri
   window.add(content)
 
   return window
+}
+
+export function LockSession() {
+  const user_input = Variable("") // User input data from entry box
+  const message = Variable("") // Prompt information provided by PAM
+  const state = Variable(PamState.IDLE) // Current state of PAM client
+  const pam = new Auth.Pam()
+  const lock = GtkSessionLock.prepare_lock()
+
+  const pam_connections = [
+    // Authentication was successful, unlock the session
+    pam.connect("success", () => SessionLocked.set(false)),
+    // Handle auth failure
+    pam.connect("fail", (_, msg) => {
+      state.set(PamState.FAILED)
+      message.set(msg)
+    }),
+    // Handle auth error
+    pam.connect("auth-error", (_, msg) => {
+      state.set(PamState.FAILED)
+      message.set(msg)
+    }),
+    // Handle prompt info without text entry
+    pam.connect("auth-info", (_, msg) => {
+      state.set(PamState.WAITING_OTHER)
+      message.set(msg)
+    }),
+    // Handle prompt for visible answer 
+    pam.connect("auth-prompt-visible", (_, msg) => {
+      state.set(PamState.WAITING_VISIBLE)
+      message.set(msg)
+    }),
+    // Handle prompt for invisible answer (e.g. password)
+    pam.connect("auth-prompt-hidden", (_, msg) => {
+      state.set(PamState.WAITING_HIDDEN)
+      message.set(msg)
+    }),
+  ]
+
+  // Initiate a session lock
+  lock.lock_lock()
+
+  const windows = new Map()
+  const unregister_display_signals = RegisterPerMonitorWindows(windows, (monitor) => {
+    return <window
+      className="LockerShade"
+      namespace="LockerShade"
+      gdkmonitor={monitor}
+      exclusivity={Astal.Exclusivity.EXCLUSIVE}
+      anchor={Anchor.TOP | Anchor.LEFT | Anchor.RIGHT | Anchor.BOTTOM}
+      layer={Astal.Layer.OVERLAY}
+      application={App}
+      visible={false}
+      setup={(w) => {
+        lock.new_surface(w, monitor)
+        w.show_all()
+      }}>
+      <centerbox vertical>
+        <box />
+        <box expand />
+        <box />
+      </centerbox>
+    </window>
+  })
+
+  const unsub = SessionLocked.subscribe((v) => {
+    if (v) {
+      return
+    }
+
+    // Cleanup from the locker
+    pam_connections.forEach((c) => pam.disconnect(c))
+    lock.unlock_and_destroy()
+    windows.forEach((w) => GtkSessionLock.unmap_lock_window(w as Gtk.Window))
+    unregister_display_signals()
+    unsub()
+  })
 }
 
 // Lock the session. This is an internal function, and should not normally
