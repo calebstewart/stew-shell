@@ -17,41 +17,21 @@ export default class NotificationCache implements Subscribable {
 
   public constructor(notifd: Notifd.Notifd) {
     notifd.connect("notified", (_, id) => this.show(notifd.get_notification(id)))
+    notifd.connect("resolved", (_, id) => this.delete(id))
   }
 
   public show(notif: Notifd.Notification) {
     // Show the notification for DEFAULT_POPUP_TIMEOUT milliseconds, and
     // then hide the notification again.
-    const timer = timeout(DEFAULT_POPUP_TIMEOUT)
-    const reveal = Variable(true).observe(timer, "now", () => {
-      console.log("Hiding the notification after timeout")
-      return false
-    })
-    const resolveId = notif.connect("resolved", () => {
-      console.log("Hiding resolved notification")
-      reveal.set(false)
-    })
+    const timer = timeout(DEFAULT_POPUP_TIMEOUT, () => this.delete(notif.id))
 
-    const item = <revealer
-      onDestroy={() => {
-        notif.disconnect(resolveId)
-        reveal.drop()
+    const item = <Notification
+      notification={notif}
+      onDismissed={() => {
         timer.cancel()
+        notif.dismiss()
       }}
-      reveal_child={bind(reveal)}
-      transition_type={Gtk.RevealerTransitionType.SLIDE_DOWN}>
-      <Notification notification={notif} onDismissed={() => notif.dismiss()} />
-    </revealer> as Gtk.Revealer
-
-    // When the child is finished being hidden, remove it from the cache. This
-    // ensures that the user sees the full animation before it is removed.
-    bind(item, "child_revealed").subscribe((child_revealed) => {
-      if (!child_revealed) {
-        item.destroy()
-        this.map.delete(notif.id)
-        this.notify()
-      }
-    })
+    />
 
     this.set(notif.id, item)
   }
