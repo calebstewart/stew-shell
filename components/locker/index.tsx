@@ -23,6 +23,7 @@ export const SessionLocked = Variable(false)
 // GtkSessionLock, and locker windows will be automatically created in teh background
 // for all displays (active and future hot-plugged).
 export function LockSession() {
+  const grace = Variable(true)
   const fail_message = Variable("")
   const info_message = Variable("")
   const state = Variable("idle") // Current state of PAM client
@@ -110,6 +111,11 @@ export function LockSession() {
         w.show_all()
       }}
       onKeyReleaseEvent={() => {
+        if (grace.get()) {
+          SessionLocked.set(false)
+          return
+        }
+
         // Transition out of failed or idle states after any keypress
         const s = state.get()
         if (s === "idle" || s === "failed") {
@@ -132,7 +138,13 @@ export function LockSession() {
               valign={Gtk.Align.CENTER}
               hhomogeneous={true}>
               <box className="idle" name="idle" halign={Gtk.Align.CENTER}>
-                <label label="Press any key to unlock..." />
+                <label label={bind(grace).as((grace) => {
+                  if (!grace) {
+                    return "Press any key to continue"
+                  } else {
+                    return "Press any key to unlock"
+                  }
+                })} />
               </box>
               <box className="submitting" name="submitting" halign={Gtk.Align.CENTER}>
                 <label label="Submitting..." className="warning" />
@@ -198,6 +210,9 @@ export function LockSession() {
     // Unsubscribe from the session locked variable
     unsub()
   })
+
+  // Disable the grace window after 10 seconds
+  timeout(5000, () => grace.set(false))
 }
 
 export default function SetupLocker() {
