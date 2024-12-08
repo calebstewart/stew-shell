@@ -4,152 +4,16 @@ import AstalIO from "gi://AstalIO"
 import Auth from "gi://AstalAuth"
 import GtkSessionLock from "gi://GtkSessionLock"
 
-import { Time } from "@components/bar/clock"
 import RegisterPerMonitorWindows from "@components/per-monitor"
 
-import { LockerQuotes, GetRandomLockerQuoteIndex, RandomLockerQuoteWidget } from "./quotes"
+import { RandomLockerQuoteWidget } from "./quotes"
 import { Bar } from "./bar"
 
 export const DEFAULT_PAM_SERVICE = "hyprlock"
 
-enum PamState {
-  IDLE,
-  SUBMITTING,
-  FAILED,
-  SUCCESS,
-  WAITING_VISIBLE,
-  WAITING_HIDDEN,
-  WAITING_OTHER,
-}
-
-function PamStateToString(s: PamState) {
-  switch (s) {
-    case PamState.IDLE:
-      return "idle"
-    case PamState.SUBMITTING:
-      return "submitting"
-    case PamState.FAILED:
-      return "failed"
-    case PamState.SUCCESS:
-      return "success"
-    case PamState.WAITING_OTHER:
-      return "waiting-other"
-    case PamState.WAITING_HIDDEN:
-      return "waiting-hidden"
-    case PamState.WAITING_VISIBLE:
-      return "waiting-visible"
-    default:
-      return "unknown"
-  }
-}
-
 const Anchor = Astal.WindowAnchor
-const window_registry = new Map<Gdk.Monitor, Gtk.Widget>()
-const pam = new Auth.Pam({
-  service: DEFAULT_PAM_SERVICE,
-  username: "caleb",
-})
-const CurrentPamMessage = Variable("")
-const CurrentPamState = Variable(PamState.IDLE)
-
-var lock: GtkSessionLock.Lock | undefined = undefined
-var unregister_display_signals: undefined | (() => void) = undefined
 
 export const SessionLocked = Variable(false)
-
-export function SetupLockerShade(monitor: Gdk.Monitor, user_input: Variable<string>) {
-  const window = <window
-    className="LockerShade"
-    namespace="LockerShade"
-    gdkmonitor={monitor}
-    exclusivity={Astal.Exclusivity.EXCLUSIVE}
-    anchor={Anchor.TOP | Anchor.BOTTOM | Anchor.LEFT | Anchor.RIGHT}
-    layer={Astal.Layer.OVERLAY}
-    application={App}
-    visible={false}
-    onKeyPressEvent={(_win, _event) => {
-      // SessionLocked.set(false)
-    }}>
-  </window> as Gtk.Window
-
-  const quote_stack = <stack
-    transition_type={Gtk.StackTransitionType.CROSSFADE}
-    homogeneous={true}
-    transition_duration={1000}
-    visible_child_name="empty">
-    <label className="random-quote" label="" name="empty" />
-    {LockerQuotes.map((quote, index) => <label className="random-quote" label={quote} name={String(index)} />)}
-  </stack> as Gtk.Stack
-
-  const timers = new Array<AstalIO.Time>()
-  timers.push(timeout(3000 + (Math.random() * 2000), () => {
-    quote_stack.visible_child_name = String(GetRandomLockerQuoteIndex())
-  }))
-
-  const unsub_transition = bind(quote_stack, "transition_running").subscribe((running) => {
-    if (running) {
-      return
-    }
-
-    // All existing timers should have already fired
-    timers.forEach((t) => t.cancel())
-    timers.length = 0
-
-    const child_name = quote_stack.get_visible_child_name()
-    if (child_name === "empty") {
-      timers.push(timeout(3000 + (Math.random() * 2000), () => {
-        quote_stack.visible_child_name = String(GetRandomLockerQuoteIndex())
-      }))
-    } else {
-      timers.push(timeout(10000, () => {
-        quote_stack.visible_child_name = "empty"
-      }))
-    }
-  })
-
-  const content = <revealer
-    reveal_child={bind(window, "has_toplevel_focus")}
-    transition_type={Gtk.RevealerTransitionType.CROSSFADE}
-    onDestroy={() => {
-      unsub_transition()
-      timers.forEach((t) => t.cancel())
-    }}>
-    <centerbox expand homogeneous={true}>
-      <box />
-      <centerbox vertical hexpand halign={Gtk.Align.CENTER} homogeneous={true}>
-        <box className="LockerHeader">
-          <label className="time" halign={Gtk.Align.CENTER} hexpand label={bind(Time).as((v) => v.split(" ", 1)[0])} />
-        </box>
-        <box className="LockerPrompt">
-          <entry
-            halign={Gtk.Align.CENTER}
-            hexpand
-            className={bind(CurrentPamState).as(PamStateToString)}
-            placeholder_text={bind(CurrentPamMessage).as((m) => m.trim().replace(/:+$/g, ""))}
-            text={bind(user_input)}
-            sensitive={bind(CurrentPamState).as((s) => s === PamState.WAITING_HIDDEN || s === PamState.WAITING_VISIBLE)}
-            visibility={bind(CurrentPamState).as((s) => s !== PamState.WAITING_HIDDEN)}
-            onChanged={(e) => user_input.set(e.text)}
-            onActivate={() => {
-              const input = user_input.get()
-              user_input.set("")
-              CurrentPamState.set(PamState.SUBMITTING)
-              CurrentPamMessage.set("Authenticating...")
-              pam.supply_secret(input)
-            }} />
-        </box>
-        <box valign={Gtk.Align.END} halign={Gtk.Align.CENTER} hexpand>
-          {quote_stack}
-        </box>
-      </centerbox>
-      <box />
-    </centerbox>
-  </revealer>
-
-  window.add(content)
-
-  return window
-}
 
 // Lock the active session. This will handle everything from beginning to end including 
 // artificially unlocking the locker when SessionLocked is set to false. It will setup

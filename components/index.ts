@@ -1,9 +1,9 @@
-import SetupBars from "./bar"
-import SetupLauncher from "./launcher"
-import SetupLocker from "./locker"
-import SetupSettingsMenu from "./settings-menu"
-import SetupNotifications from "./notifications"
-import { SetupPopups } from "./popup"
+import SetupBars from "@components/bar"
+import SetupLauncher from "@components/launcher"
+import SetupLocker from "@components/locker"
+import SetupSettingsMenu from "@components/settings-menu"
+import SetupNotifications from "@components/notifications"
+import { SetupPopups } from "@components/popup"
 
 export default function Setup() {
   // Setup generic popups
