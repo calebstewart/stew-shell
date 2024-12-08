@@ -13,7 +13,7 @@ export const SettingsMenuCloserName = SettingsMenuName + "Closer"
 
 export function SettingsMenuButton() {
   return <button className="SettingsMenuButton" onClicked={ToggleSettingsMenu}>
-    <label className="fa-solid" label={"\uf0c9"} />
+    <label className="fa-solid" label={"\uf7d9"} />
   </button>
 }
 

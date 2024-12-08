@@ -1,4 +1,4 @@
-import { Variable, bind, timeout, interval } from "astal"
+import { Variable, bind, timeout, interval, GLib } from "astal"
 import { Astal, App, Gdk, Gtk } from "astal/gtk3"
 import AstalIO from "gi://AstalIO"
 import Auth from "gi://AstalAuth"
@@ -7,7 +7,8 @@ import GtkSessionLock from "gi://GtkSessionLock"
 import { Time } from "@components/bar/clock"
 import RegisterPerMonitorWindows from "@components/per-monitor"
 
-import { LockerQuotes, GetRandomLockerQuoteIndex } from "./quotes"
+import { LockerQuotes, GetRandomLockerQuoteIndex, RandomLockerQuoteWidget } from "./quotes"
+import { Bar } from "./bar"
 
 export const DEFAULT_PAM_SERVICE = "hyprlock"
 
@@ -26,15 +27,17 @@ function PamStateToString(s: PamState) {
     case PamState.IDLE:
       return "idle"
     case PamState.SUBMITTING:
-      return "submitting warning"
+      return "submitting"
     case PamState.FAILED:
-      return "failed error"
+      return "failed"
     case PamState.SUCCESS:
       return "success"
+    case PamState.WAITING_OTHER:
+      return "waiting-other"
     case PamState.WAITING_HIDDEN:
-      return "waiting input-hidden"
+      return "waiting-hidden"
     case PamState.WAITING_VISIBLE:
-      return "waiting input-visible"
+      return "waiting-visible"
     default:
       return "unknown"
   }
@@ -148,66 +151,169 @@ export function SetupLockerShade(monitor: Gdk.Monitor, user_input: Variable<stri
   return window
 }
 
+// Lock the active session. This will handle everything from beginning to end including 
+// artificially unlocking the locker when SessionLocked is set to false. It will setup
+// it's own PAM context, and interact with GtkSessionLock directly. When finished, all
+// top-level locker windows will be destroyed, and the PAM context destroyed. This
+// function does not block or return any value. Upon return the session is locked via
+// GtkSessionLock, and locker windows will be automatically created in teh background
+// for all displays (active and future hot-plugged).
 export function LockSession() {
-  const user_input = Variable("") // User input data from entry box
-  const message = Variable("") // Prompt information provided by PAM
-  const state = Variable(PamState.IDLE) // Current state of PAM client
-  const pam = new Auth.Pam()
+  const fail_message = Variable("")
+  const info_message = Variable("")
+  const state = Variable("idle") // Current state of PAM client
+  const pam = new Auth.Pam({
+    service: DEFAULT_PAM_SERVICE,
+  })
+  const prompt = {
+    input: Variable(""),
+    message: Variable(""),
+    visible: Variable(false),
+  }
   const lock = GtkSessionLock.prepare_lock()
 
+  // Connect to all the PAM signals, and update state accordingly
   const pam_connections = [
     // Authentication was successful, unlock the session
     pam.connect("success", () => SessionLocked.set(false)),
     // Handle auth failure
     pam.connect("fail", (_, msg) => {
-      state.set(PamState.FAILED)
-      message.set(msg)
+      fail_message.set(msg)
+      state.set("failed")
     }),
     // Handle auth error
     pam.connect("auth-error", (_, msg) => {
-      state.set(PamState.FAILED)
-      message.set(msg)
+      fail_message.set(msg)
+      state.set("failed")
     }),
     // Handle prompt info without text entry
     pam.connect("auth-info", (_, msg) => {
-      state.set(PamState.WAITING_OTHER)
-      message.set(msg)
+      info_message.set(msg)
+      state.set("info")
     }),
     // Handle prompt for visible answer 
     pam.connect("auth-prompt-visible", (_, msg) => {
-      state.set(PamState.WAITING_VISIBLE)
-      message.set(msg)
+      prompt.input.set("")
+      prompt.visible.set(true)
+      prompt.message.set(msg)
+      state.set("prompt")
     }),
     // Handle prompt for invisible answer (e.g. password)
     pam.connect("auth-prompt-hidden", (_, msg) => {
-      state.set(PamState.WAITING_HIDDEN)
-      message.set(msg)
+      prompt.input.set("")
+      prompt.visible.set(false)
+      prompt.message.set(msg)
+      state.set("prompt")
     }),
   ]
 
-  // Initiate a session lock
+  // Lock the session (initially with no visible windows)
   lock.lock_lock()
 
-  const windows = new Map()
-  const unregister_display_signals = RegisterPerMonitorWindows(windows, (monitor) => {
+  // Register a continuous monitor binding which ensures we always have locker
+  // windows for each display. This includes active current displays and future
+  // hot-plugged displays. The `new Map()` call allocates a registry mapping Astal.Window's
+  // to GDK monitors, but we don't need to access it directly, so we transparently allocate
+  // it and pass it through to the per-monitor component.
+  const unregister_display_signals = RegisterPerMonitorWindows(new Map(), (monitor) => {
+    // Indicates whether we have focus, and should make the form UI visible
+    const visible = Variable(false)
+
     return <window
       className="LockerShade"
       namespace="LockerShade"
       gdkmonitor={monitor}
       exclusivity={Astal.Exclusivity.EXCLUSIVE}
       anchor={Anchor.TOP | Anchor.LEFT | Anchor.RIGHT | Anchor.BOTTOM}
+      keymode={Astal.Keymode.ON_DEMAND}
       layer={Astal.Layer.OVERLAY}
       application={App}
       visible={false}
+      onDestroy={(w) => GtkSessionLock.unmap_lock_window(w)}
       setup={(w) => {
+        // Bind to the 'is-active' property which indicates whether we have top-level
+        // focus for this window.
+        const unsub = bind(w, "is_active").subscribe((active) => {
+          visible.set(active)
+        })
+        w.connect("destroy", () => unsub())
+
+        // Register the surface with the locker so we get displayed by the
+        // compositor even though the session is locked. This must be done
+        // before the window is realized, so we set `visible=false` above,
+        // but immediately call `show_all()` after registering the surface.
         lock.new_surface(w, monitor)
         w.show_all()
+      }}
+      onKeyReleaseEvent={() => {
+        // Transition out of failed or idle states after any keypress
+        const s = state.get()
+        if (s === "idle" || s === "failed") {
+          // PAM should initially prompt for *something*, which will cause us
+          // to transition to a new state. If this doesn't happen, then we
+          // are stuck.
+          pam.start_authenticate()
+        }
       }}>
-      <centerbox vertical>
-        <box />
-        <box expand />
-        <box />
-      </centerbox>
+      <box vertical>
+        <Bar />
+        <box>
+          <box expand visible={bind(visible).as((v) => !v)} />
+          <centerbox vertical halign={Gtk.Align.CENTER} visible={bind(visible)}>
+            <box valign={Gtk.Align.CENTER} />
+            <stack
+              className="forms"
+              transition_type={Gtk.StackTransitionType.CROSSFADE}
+              visible_child_name={bind(state)}
+              valign={Gtk.Align.CENTER}
+              hhomogeneous={true}>
+              <box className="idle" name="idle" halign={Gtk.Align.CENTER}>
+                <label label="Press any key to unlock..." />
+              </box>
+              <box className="submitting" name="submitting" halign={Gtk.Align.CENTER}>
+                <label label="Submitting..." className="warning" />
+              </box>
+              <box className="failed" name="failed" halign={Gtk.Align.CENTER} vertical>
+                <label label={bind(fail_message)} className="dangerous" />
+                <label label="Press any key to try again..." />
+              </box>
+              <box className="success" name="success" halign={Gtk.Align.CENTER}>
+                <label label="Authentication Complete!" />
+              </box>
+              <box className="info" name="info" halign={Gtk.Align.CENTER}>
+                <label label={bind(info_message)} />
+              </box>
+              <box className="prompt" name="prompt" expand halign={Gtk.Align.CENTER}>
+                <label label={bind(prompt.message)} />
+                <entry
+                  className="hidden-input"
+                  placeholder_text="Response..."
+                  text={bind(prompt.input)}
+                  width_chars={30}
+                  onChanged={(e) => prompt.input.set(e.text)}
+                  visibility={bind(prompt.visible)}
+                  setup={(e) => {
+                    const unsubState = bind(state).subscribe(() => e.grab_focus())
+                    const unsubVisible = bind(visible).subscribe(() => e.grab_focus())
+
+                    e.connect("destroy", () => {
+                      unsubState()
+                      unsubVisible()
+                    })
+                  }}
+                  onActivate={() => {
+                    const input = prompt.input.get()
+                    state.set("submitting")
+                    prompt.input.set("")
+                    pam.supply_secret(input)
+                  }} />
+              </box>
+            </stack>
+            <box />
+          </centerbox>
+        </box>
+        <RandomLockerQuoteWidget />
+      </box>
     </window>
   })
 
@@ -216,102 +322,18 @@ export function LockSession() {
       return
     }
 
-    // Cleanup from the locker
+    // Remove all the pam listeners
     pam_connections.forEach((c) => pam.disconnect(c))
+
+    // Unlock the session
     lock.unlock_and_destroy()
-    windows.forEach((w) => GtkSessionLock.unmap_lock_window(w as Gtk.Window))
+
+    // Unregister and destroy all locker windows
     unregister_display_signals()
+
+    // Unsubscribe from the session locked variable
     unsub()
   })
-}
-
-// Lock the session. This is an internal function, and should not normally
-// be used. You should use the DesktopLocked variable to control the session
-// lock state. This function is only invoked from the DesktopLocked subscriber
-// which is registerd by SetupLocker.
-function lock_session() {
-  if (lock != undefined) {
-    return
-  }
-
-  const user_input = Variable("")
-  CurrentPamMessage.set("")
-  CurrentPamState.set(PamState.IDLE)
-
-  lock = GtkSessionLock.prepare_lock()
-  lock.lock_lock()
-
-  unregister_display_signals = RegisterPerMonitorWindows(window_registry, (monitor) => {
-    const window = SetupLockerShade(monitor, user_input)
-    lock!.new_surface(window, monitor)
-    window.show_all()
-    return window
-
-    return <window
-      className="LockerShade"
-      namespace="LockerShade"
-      gdkmonitor={monitor}
-      exclusivity={Astal.Exclusivity.EXCLUSIVE}
-      anchor={Anchor.TOP | Anchor.BOTTOM | Anchor.LEFT | Anchor.RIGHT}
-      layer={Astal.Layer.OVERLAY}
-      application={App}
-      visible={true}
-      setup={(w) => lock!.new_surface(w, monitor)}>
-      <revealer
-        transition_type={Gtk.RevealerTransitionType.CROSSFADE}>
-        <centerbox expand homogeneous={true}>
-          <box />
-          <centerbox vertical homogeneous={true}>
-            <box className="LockerHeader">
-              <label
-                className="time"
-                label={bind(Time).as((v) => v.replace(/ .*$/, ""))} />
-            </box>
-            <box className="LockerPrompt">
-            </box>
-            <box>
-            </box>
-          </centerbox>
-          <box />
-        </centerbox>
-      </revealer>
-    </window>
-  })
-
-  // We start authentication here. This should cause pam to invoke our connected
-  // signal to prompt for input from the user. This normally means prompting for the
-  // password, but could also be something like "Place your finger on the fingerpint sensor"
-  // or whatever.
-  pam.start_authenticate()
-}
-
-// Unlock the session. This is an internal function, and should not normally
-// be used. You should use the DesktopLocked variable to control the session
-// lock state. This function is only invoked from the DesktopLocked subscriber
-// which is registerd by SetupLocker.
-function unlock_session() {
-  if (lock === undefined) {
-    return
-  }
-
-  // Ensure no new lock windows are created
-  if (unregister_display_signals) {
-    unregister_display_signals()
-    unregister_display_signals = undefined
-  }
-
-  // Unlock the session
-  lock.unlock_and_destroy()
-  lock = undefined
-
-  // Destroy existing windows
-  window_registry.forEach((w) => {
-    GtkSessionLock.unmap_lock_window(w.get_toplevel() as Gtk.Window)
-    w.destroy()
-  })
-
-  // Clear the list
-  window_registry.clear()
 }
 
 export default function SetupLocker() {
@@ -320,46 +342,6 @@ export default function SetupLocker() {
     return
   }
 
-  pam.connect("auth-error", (_, message) => {
-    CurrentPamMessage.set(message)
-    CurrentPamState.set(PamState.FAILED)
-  })
-
-  pam.connect("auth-info", (_, message) => {
-    CurrentPamMessage.set(message)
-  })
-
-  pam.connect("auth-prompt-visible", (_, message) => {
-    CurrentPamMessage.set(message)
-    CurrentPamState.set(PamState.WAITING_VISIBLE)
-  })
-
-  pam.connect("auth-prompt-hidden", (_, message) => {
-    CurrentPamMessage.set(message)
-    CurrentPamState.set(PamState.WAITING_HIDDEN)
-  })
-
-  pam.connect("fail", (_, message) => {
-    CurrentPamMessage.set(message)
-    CurrentPamState.set(PamState.FAILED)
-
-    // Let the user actually see the failure message, and then
-    // start authentication again, which just starts the whole
-    // process over.
-    timeout(2000, () => pam.start_authenticate())
-  })
-
-  pam.connect("success", (_) => {
-    CurrentPamMessage.set("")
-    CurrentPamState.set(PamState.SUCCESS)
-    SessionLocked.set(false)
-  })
-
-  SessionLocked.subscribe((locked) => {
-    if (locked) {
-      lock_session()
-    } else {
-      unlock_session()
-    }
-  })
+  // Any time SessionLocked is set to true, lock the session
+  SessionLocked.subscribe((locked) => locked && LockSession())
 }

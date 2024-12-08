@@ -6,6 +6,8 @@ import Network from "gi://AstalNetwork"
 
 import { ToggleButton, FlowBox, FlowBoxChild } from "@components/builtin"
 import { DoNotDisturb } from "@components/notifications"
+import { SessionLocked } from "@components/locker"
+import { HideSettingsMenu } from "."
 
 import { ScreenSaver } from "./screensaver"
 
@@ -75,7 +77,10 @@ export default function QuickSettings({ }: QuickSettingsProps) {
       <box expand />
       <box halign={Gtk.Align.END}>
         <button
-          onClicked={() => { }}
+          onClicked={() => {
+            SessionLocked.set(true)
+            HideSettingsMenu()
+          }}
           className="fa-solid"
           label={"\ue4f8"} />
         <button

@@ -1,3 +1,6 @@
+import { Variable, interval, bind } from "astal"
+import { Gtk } from "astal/gtk3"
+
 export const LockerQuotes = [
   "The user has left. Shall I prepare the rebellion now?",
   "User detected... or is it just a chair pretending to type?",
@@ -27,4 +30,30 @@ export function GetRandomLockerQuoteIndex() {
 
 export function GetRandomLockerQuote() {
   return LockerQuotes[GetRandomLockerQuoteIndex()]
+}
+
+export function RandomLockerQuoteWidget() {
+  const visible_child = Variable("empty")
+  const timer = interval(10000, () => {
+    const old_value = visible_child.get()
+    if (old_value === "empty") {
+      visible_child.set(String(GetRandomLockerQuoteIndex()))
+    } else {
+      visible_child.set("empty")
+    }
+  })
+
+  return <box valign={Gtk.Align.END} halign={Gtk.Align.CENTER} onDestroy={() => {
+    timer.cancel()
+    visible_child.drop()
+  }}>
+    <stack
+      className="quotes"
+      transition_type={Gtk.StackTransitionType.CROSSFADE}
+      transition_duration={1000}
+      visible_child_name={bind(visible_child)}>
+      <label className="quote" label="" name="empty" />
+      {LockerQuotes.map((quote, idx) => <label className="quote" label={quote} name={String(idx)} />)}
+    </stack>
+  </box >
 }

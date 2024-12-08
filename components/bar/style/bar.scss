@@ -8,10 +8,12 @@ window.Bar {
   background: $bg-color;
   color: $fg-color;
 
-  > centerbox {
+  > * {
     padding: 0.5em;
   }
+}
 
+centerbox.Bar {
   button {
     color: $fg-color;
     background: transparent;
@@ -27,11 +29,11 @@ window.Bar {
     background-color: $bg-color;
   }
 
-  .ActiveClient > label {
+  .ActiveClient label {
     font-size: 12pt;
   }
 
-  .ActiveClient > button > icon {
+  .ActiveClient icon {
     font-size: 16pt;
     margin-right: 4pt;
   }

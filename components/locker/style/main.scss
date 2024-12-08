@@ -8,7 +8,12 @@ window.LockerShade {
   //   100% { background-color: $bg-color; }
   // }
   
-  background-color: $bg-color;
+  background: $bg-color;
+  color: $fg-color;
+
+  >box {
+    padding: 1em;
+  }
 
   .LockerHeader {
     >label.time {
@@ -29,7 +34,37 @@ window.LockerShade {
     }
   }
 
-  label.random-quote {
+  .greeting {
+    font-size: 64pt;
+    color: gtkshade($fg-color, 0.9);
+  }
+
+  .idle label {
+    font-size: 20pt;
+    color: gtkalpha($fg-color, 0.6);
+  }
+
+  .submitting {
+    font-size: 20pt;
+    color: gtkalpha($fg-color, 0.6);
+  }
+
+  .failed label {
+    font-size: 20pt;
+    &:not(.dangerous) {
+      color: gtkalpha($fg-color, 0.6);
+    }
+  }
+
+  .prompt {
+    font-size: 16pt;
+
+    entry {
+      border-radius: 16px;
+    }
+  }
+
+  label.quote {
     font-size: 10pt;
     color: gtkalpha($fg-color, 0.6);
     margin-top: 2rem;

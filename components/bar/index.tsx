@@ -14,6 +14,11 @@ import TrayItems from "./tray"
 import style from "./style/bar.scss"
 
 export { default as BarItem } from "./item"
+export { default as PrivacyIndicators } from "./privacy"
+export { WiredStatus, WirelessStatus } from "./network"
+export { default as Bluetooth } from "./bluetooth"
+export { default as Clock } from "./clock"
+export { default as TrayItems } from "./tray"
 
 const Anchor = Astal.WindowAnchor
 const bar_registry = new Map<Gdk.Monitor, Gtk.Widget>()
@@ -53,7 +58,7 @@ export function SetupBar(monitor: Gdk.Monitor, index: number) {
     anchor={Anchor.TOP | Anchor.LEFT | Anchor.RIGHT}
     application={App}
     css={style}>
-    <centerbox>
+    <centerbox className="Bar">
       {StartBlock(monitor, index)}
       {CenterBlock(monitor, index)}
       {EndBlock(monitor, index)}
