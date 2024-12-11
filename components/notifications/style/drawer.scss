@@ -6,48 +6,57 @@
 window.NotificationDrawer {
   all: unset;
 
-  .Notifications > .header {
-    margin: 1rem 1rem;
-
-    &>label {
-      font-weight: bold;
-      font-size: 14pt;
-    }
-
-    &>button {
-      color: $fg-color;
-      font-size: 16pt;
-      background: transparent;
-      box-shadow: none;
-      margin-right: 0;
-      padding-right: 0;
-    }
-
-    &>button:hover {
-      color: gtkshade($fg-color, 1.2);
-      background: gtkalpha($bg-color, 0.9);
-    }
-  }
-
   separator {
     margin: 0 .4rem;
     background-color: gtkalpha($fg-color, .1);
   }
 
   box.Notifications {
-    background: $bg-color;
+    background: gtkalpha($bg-color, 0.75);
     color: $fg-color;
     min-width: 600px;
     box-shadow: 2px 3px 8px 0 gtkalpha(black, 0.4);
-    border: 1pt solid $borders;
-    margin: 0.5rem 1rem 0.5rem 1rem;
+    border: 1px solid gtkalpha($borders, 0.75);
+    margin: 0; // 0.5rem 1rem 0.5rem 1rem;
     border-radius: 5px;
+
+    > .header {
+      background: $bg-color;
+      margin: 1rem 1rem;
+
+      &>label {
+        font-weight: bold;
+        font-size: 14pt;
+      }
+
+      &>button {
+        color: $fg-color;
+        font-size: 16pt;
+        background: transparent;
+        box-shadow: none;
+        margin-right: 0;
+        padding-right: 0;
+      }
+
+      &>button:hover {
+        color: gtkshade($fg-color, 1.2);
+        background: gtkalpha($bg-color, 0.9);
+      }
+    }
 
     .EmptyNotifications {
       font-size: 12pt;
       font-weight: bold;
       margin: 2em;
       color: gtkalpha($fg-color, 0.6);
+      background: transparent;
+    }
+
+    scrollable {
+      > * {
+        background: transparent;
+        border: none;
+      }
     }
 
     eventbox.Notification {

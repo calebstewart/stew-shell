@@ -89,7 +89,7 @@ export function PopupWindow(windowprops: PopupWindowProps) {
     {...props}
     name={name}
     layer={Astal.Layer.OVERLAY}
-    exclusivity={Astal.Exclusivity.EXCLUSIVE}
+    exclusivity={exclusivity ?? Astal.Exclusivity.EXCLUSIVE}
     keymode={Astal.Keymode.EXCLUSIVE}
     onKeyPressEvent={newKeyPressHandler}
     visible={visible}

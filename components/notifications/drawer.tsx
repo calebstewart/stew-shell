@@ -53,13 +53,14 @@ export default function SetupNotificationDrawer() {
     className={NotificationDrawerName}
     namespace={NotificationDrawerName}
     application={App}
-    anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
+    anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT | Astal.WindowAnchor.BOTTOM}
+    exclusivity={Astal.Exclusivity.NORMAL}
     onShow={() => DisableNotificationPopup.set(true)}
     onHide={() => DisableNotificationPopup.set(false)}>
     <box className="Notifications" vertical>
       <centerbox className="header" >
         <label halign={Gtk.Align.START} hexpand label="Notifications" />
-        <box expand />
+        <box />
         <button
           halign={Gtk.Align.END}
           className="fa-solid"
@@ -67,9 +68,15 @@ export default function SetupNotificationDrawer() {
           onClicked={() => notifd.get_notifications().forEach((n) => n.dismiss())} />
       </centerbox>
       <Gtk.Separator visible />
-      <box vertical>
-        {notifications}
-      </box>
+      <scrollable
+        vexpand={true}
+        propagate_natural_height={true}
+        hscrollbar_policy={Gtk.PolicyType.NEVER}
+        vscrollbar_policy={Gtk.PolicyType.AUTOMATIC}>
+        <box vertical>
+          {notifications}
+        </box>
+      </scrollable>
     </box>
   </PopupWindow>
 }
