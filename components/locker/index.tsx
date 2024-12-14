@@ -83,6 +83,21 @@ export function LockSession() {
   const unregister_display_signals = RegisterPerMonitorWindows(new Map(), (monitor) => {
     // Indicates whether we have focus, and should make the form UI visible
     const visible = Variable(false)
+    const handle_interaction = () => {
+      if (grace.get()) {
+        SessionLocked.set(false)
+        return
+      }
+
+      // Transition out of failed or idle states after any keypress
+      const s = state.get()
+      if (s === "idle" || s === "failed") {
+        // PAM should initially prompt for *something*, which will cause us
+        // to transition to a new state. If this doesn't happen, then we
+        // are stuck.
+        pam.start_authenticate()
+      }
+    }
 
     return <window
       className="LockerShade"
@@ -96,6 +111,8 @@ export function LockSession() {
       visible={false}
       onDestroy={(w) => GtkSessionLock.unmap_lock_window(w)}
       setup={(w) => {
+        w.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
+
         // Bind to the 'is-active' property which indicates whether we have top-level
         // focus for this window.
         const unsub = bind(w, "is_active").subscribe((active) => {
@@ -110,21 +127,15 @@ export function LockSession() {
         lock.new_surface(w, monitor)
         w.show_all()
       }}
-      onKeyReleaseEvent={() => {
-        if (grace.get()) {
-          SessionLocked.set(false)
-          return
+      onMotionNotifyEvent={(w, e) => {
+        console.log(e)
+        if (e.x !== undefined && e.y !== undefined) {
+          console.log(e.x)
+          console.log(e.y)
         }
-
-        // Transition out of failed or idle states after any keypress
-        const s = state.get()
-        if (s === "idle" || s === "failed") {
-          // PAM should initially prompt for *something*, which will cause us
-          // to transition to a new state. If this doesn't happen, then we
-          // are stuck.
-          pam.start_authenticate()
-        }
-      }}>
+      }}
+      onButtonPressEvent={handle_interaction}
+      onKeyReleaseEvent={handle_interaction}>
       <box vertical>
         <Bar />
         <box>
