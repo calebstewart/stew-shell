@@ -13,6 +13,12 @@
             "@components/*": [
                 "./components/*"
             ],
+            "@lib": [
+                "./lib"
+            ],
+            "@lib/*": [
+                "./lib/*"
+            ],
             "astal": [
                 "/nix/store/1pd4fdq90f4vla3zghmfci9axsbvkd3w-astal-gjs/share/astal/gjs"
             ],

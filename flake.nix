@@ -40,6 +40,7 @@
           pkgs.gtk-session-lock.dev
           pkgs.glib
           pkgs.polkit
+          pkgs.libvirt-glib
           # pkgs.fzf
         ];
       };
@@ -74,6 +75,7 @@
               ags.packages.${system}.auth
               pkgs.gtk-session-lock.dev
               pkgs.polkit
+              pkgs.libvirt-glib
             ];
           })
         ];
