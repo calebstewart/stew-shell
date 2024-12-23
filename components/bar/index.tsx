@@ -11,6 +11,7 @@ import { WiredStatus, WirelessStatus } from "./network"
 import Bluetooth from "./bluetooth"
 import Clock from "./clock"
 import TrayItems from "./tray"
+import BatteryStatus from "./battery"
 import style from "./style/bar.scss"
 
 export { default as BarItem } from "./item"
@@ -43,6 +44,7 @@ function EndBlock(_monitor: Gdk.Monitor, _index: number) {
     {WiredStatus()}
     {WirelessStatus()}
     {PrivacyIndicators()}
+    {BatteryStatus()}
     {Clock()}
     {NotificationDrawerButton()}
     {SettingsMenuButton()}
