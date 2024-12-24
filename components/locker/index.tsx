@@ -55,6 +55,7 @@ export function LockSession() {
     pam.connect("auth-info", (_, msg) => {
       info_message.set(msg)
       state.set("info")
+      pam.supply_secret("")
     }),
     // Handle prompt for visible answer 
     pam.connect("auth-prompt-visible", (_, msg) => {
