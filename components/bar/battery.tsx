@@ -9,7 +9,8 @@ const reveal = Variable(false)
 export default function BatteryStatus() {
   return <BarItem
     className="Battery"
-    onButtonReleaseEvent={(_, e) => ToggleForButtonEvent(e, reveal, 1)}>
+    onButtonReleaseEvent={(_, e) => ToggleForButtonEvent(e, reveal, 1)}
+    reveal={bind(reveal)}>
     <icon icon={bind(battery, "icon_name").as(String)} />
     <label label={bind(battery, "percentage").as((p) => `${p * 100}%`)} />
   </BarItem>
