@@ -1,9 +1,9 @@
 import { Variable, bind } from "astal"
 import { Astal, App, Gdk, Gtk, Widget } from "astal/gtk3"
 
-// import RegisterPerMonitorWindows from "@components/per-monitor"
+import RegisterPerMonitorWindows from "@components/per-monitor"
 
-// const Anchor = Astal.WindowAnchor
+const Anchor = Astal.WindowAnchor
 
 export const VisiblePopup = Variable<string | null>(null)
 
@@ -42,22 +42,22 @@ export function ActivePopup() {
 }
 
 export function SetupPopups() {
-  // RegisterPerMonitorWindows(
-  //   new Map<Gdk.Monitor, Gtk.Widget>(),
-  //   (monitor, index) => {
-  //     return <window
-  //       name={`PopupCloser${index}`}
-  //       className="PopupCloser"
-  //       namespace="PopupCloser"
-  //       layer={Astal.Layer.TOP}
-  //       visible={bind(VisiblePopup).as((v) => v !== null)}
-  //       application={App}
-  //       gdkmonitor={monitor}
-  //       anchor={Anchor.LEFT | Anchor.RIGHT | Anchor.TOP | Anchor.BOTTOM}>
-  //       <eventbox onButtonReleaseEvent={() => VisiblePopup.set(null)} />
-  //     </window>
-  //   },
-  // )
+  RegisterPerMonitorWindows(
+    new Map<Gdk.Monitor, Gtk.Widget>(),
+    (monitor, index) => {
+      return <window
+        name={`PopupCloser${index}`}
+        className="PopupCloser"
+        namespace="PopupCloser"
+        layer={Astal.Layer.TOP}
+        visible={bind(VisiblePopup).as((v) => v !== null)}
+        application={App}
+        gdkmonitor={monitor}
+        anchor={Anchor.LEFT | Anchor.RIGHT | Anchor.TOP | Anchor.BOTTOM}>
+        <eventbox onButtonReleaseEvent={() => VisiblePopup.set(null)} />
+      </window>
+    },
+  )
 }
 
 export function PopupWindow(windowprops: PopupWindowProps) {
