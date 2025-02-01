@@ -7,6 +7,10 @@ const battery = Battery.get_default()
 const reveal = Variable(false)
 
 export default function BatteryStatus() {
+  if (!battery.get_is_present()) {
+    return
+  }
+
   return <BarItem
     className="Battery"
     onButtonReleaseEvent={(_, e) => ToggleForButtonEvent(e, reveal, 1)}

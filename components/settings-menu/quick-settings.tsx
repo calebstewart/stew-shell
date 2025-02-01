@@ -54,6 +54,10 @@ function IdleInhibitToggle({ }: {}) {
 function WifiToggle({ }: {}) {
   const network = Network.get_default()
 
+  if (network.wifi === null) {
+    return
+  }
+
   return <QuickToggle label="Wi-Fi" active={bind(network.wifi, "enabled")} onToggled={(b) => {
     network.wifi.enabled = b.active
   }} />
