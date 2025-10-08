@@ -1,170 +1,106 @@
-import { Variable } from "astal"
-import { Gtk, Gdk } from "astal/gtk3"
-import { bind } from "astal/binding"
-import { timeout } from "astal/time"
+import { Accessor, createBinding, createState, createComputed } from "ags"
+import { Timer } from "ags/time"
+import { Gtk, Gdk } from "ags/gtk4"
+import { timeout } from "ags/time"
 import Wp from "gi://AstalWp"
 
-import { AstalMenu, AstalMenuItem } from "@components/builtin"
+import { ICON_MICROPHONE_LINES, ICON_MICROPHONE_LINES_SLASH, ICON_VIDEO } from "../fontawesome"
 
-import BarItem from "./item"
+export function ListeningIndicator({ reveal }: {
+  reveal: Accessor<boolean>,
+}) {
+  const audio = Wp.get_default().audio
+  const muted = createBinding(audio.default_microphone, "mute")
+  const icon = muted((m) => m ? ICON_MICROPHONE_LINES_SLASH : ICON_MICROPHONE_LINES)
+  const recorders = createBinding(audio, "recorders")
+  const hasRecorders = recorders((v: Wp.Stream[]) => v.length > 0)
+  const [newRecorderReveal, setNewRecorderReveal] = createState(false)
 
-const wp = Wp.get_default()!
-const audio = wp.audio
-const video = wp.video
+  const computedReveal = createComputed([
+    newRecorderReveal,
+    reveal,
+  ], (new_recorder: boolean, revealed: boolean) => new_recorder || revealed)
 
-export function ListeningIndicator() {
-  // Create a variable which will control revealing the label
-  // This is separate from revealing the icon.
-  const reveal = Variable(false)
+  var newRecorderTimer: Timer | null = null;
+  const unsubRecorders = recorders.subscribe(() => {
+    if (newRecorderTimer !== null) {
+      newRecorderTimer.cancel()
+    }
 
-  // When a new recorder is added, show the label. The label
-  // will then automatically hide again after 3 seconds. This
-  // gives a visual indication of a new listener if the icon
-  // was already visible on screen.
-  const recorderConnectId = audio.connect("recorder-added", (_audio, _endpoint) => {
-    reveal.set(true)
-    timeout(3000, () => reveal.set(false))
+    setNewRecorderReveal(true)
+    newRecorderTimer = timeout(3000, () => {
+      setNewRecorderReveal(false)
+      newRecorderTimer = null
+    })
   })
 
-  const recorder_menu = <AstalMenu
-    onHide={() => reveal.set(false)}
-    className="AudioRecorderMenu">
-    {bind(audio, "recorders").as((recorders: Wp.Endpoint[] | null) => recorders?.map((recorder) => {
-      const label = Variable.derive(
-        [bind(recorder, "name"), bind(recorder, "description")],
-        (name, description) => {
-          return `${description} - ${name}`
-        }
-      )
+  const details = recorders((recorders: Wp.Stream[]) => {
+    if (recorders.length > 1) {
+      return `${recorders.length} listeners`
+    } else if (recorders.length == 1) {
+      return recorders[0].name
+    } else {
+      return "No listeners"
+    }
+  })
 
-      return <AstalMenuItem
-        onDestroy={() => label.drop()}
-        onActivate={() => {
-          recorder.mute = !recorder.mute
-        }}>
-        <box>
-          <icon icon={bind(recorder, "volume_icon").as(String)} />
-          <label label={bind(label)} />
-        </box>
-      </AstalMenuItem>
-    }))}
-  </AstalMenu> as Gtk.Menu
+  const classes = muted((muted) => muted ? "PrivacyIndicator muted" : "PrivacyIndicator unmuted")
 
-  // Wrap the tray icon in a revealer. We don't want or need a microphone icon unless
-  // something is recording, so only show the icon when recorders are present.
-  return <revealer
-    reveal_child={bind(audio, "recorders").as((recorders) => recorders.length > 0)}
-    transition_type={Gtk.RevealerTransitionType.SLIDE_RIGHT}
-    onDestroy={() => audio.disconnect(recorderConnectId)} >
-    <BarItem
-      className={bind(audio.default_microphone, "mute").as((muted) => (
-        muted ? "PrivacyIndicator muted" : "PrivacyIndicator unmuted"
-      ))}
-      onButtonReleaseEvent={(widget, event) => {
-        const [has_button, button] = event.get_button()
-        if (!has_button) {
-          return
-        }
-
-        switch (button) {
-          case 1:
-            audio.default_microphone.set_mute(!audio.default_microphone.get_mute())
-            break
-          case 3:
-            recorder_menu.popup_at_widget(widget, Gdk.Gravity.SOUTH_WEST, Gdk.Gravity.NORTH_WEST, event)
-            break
-        }
-      }}
-      reveal={bind(reveal)}>
-      <label className="fa-solid" label={bind(audio.default_microphone, "mute").as((muted) => (
-        muted ? "\uf539" : "\uf3c9"
-      ))} />
-      <label label={bind(audio, "recorders").as((recorders) => {
-        if (recorders.length == 0) {
-          return "No listeners"
-        } else if (recorders.length == 1) {
-          return `${recorders[0].description} - ${recorders[0].name}`
-        } else {
-          return `${recorders.length} Listening`
-        }
-      })} />
-    </BarItem>
+  return <revealer reveal_child={hasRecorders} transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT} onDestroy={unsubRecorders}>
+    <box class={classes}>
+      <label class="fa-solid" label={icon} />
+      <revealer reveal_child={computedReveal} transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT}>
+        <label label={details} />
+      </revealer>
+    </box>
   </revealer>
 }
 
-export function VideoRecordingIndicator() {
-  // Create a variable which will control revealing the label
-  // This is separate from revealing the icon.
-  const reveal = Variable(false)
+export function VideoRecordingIndicator({ reveal }: {
+  reveal: Accessor<boolean>,
+}) {
+  const video = Wp.get_default().video
+  const icon = ICON_VIDEO
+  const recorders = createBinding(video, "recorders")
+  const hasRecorders = recorders((v: Wp.Stream[]) => v.length > 0)
+  const [newRecorderReveal, setNewRecorderReveal] = createState(false)
 
-  // When a new recorder is added, show the label. The label
-  // will then automatically hide again after 3 seconds. This
-  // gives a visual indication of a new listener if the icon
-  // was already visible on screen.
-  const recorderConnectId = video.connect("recorder-added", (_audio, _endpoint) => {
-    reveal.set(true)
-    timeout(3000, () => reveal.set(false))
+  const computedReveal = createComputed([
+    newRecorderReveal,
+    reveal,
+  ], (new_recorder: boolean, revealed: boolean) => new_recorder || revealed)
+
+  var newRecorderTimer: Timer | null = null;
+  const unsubRecorders = recorders.subscribe(() => {
+    if (newRecorderTimer !== null) {
+      newRecorderTimer.cancel()
+    }
+
+    setNewRecorderReveal(true)
+    newRecorderTimer = timeout(3000, () => {
+      setNewRecorderReveal(false)
+      newRecorderTimer = null
+    })
   })
 
-  const recorder_menu = <AstalMenu
-    onHide={() => reveal.set(false)}
-    className="VideoRecorderMenu">
-    {bind(video, "recorders").as((recorders: Wp.Endpoint[] | null) => recorders?.map((recorder) => {
-      const label = Variable.derive(
-        [bind(recorder, "name"), bind(recorder, "description")],
-        (name, description) => {
-          return `${name} - ${description}`
-        }
-      )
+  const details = recorders((recorders: Wp.Stream[]) => {
+    if (recorders.length > 1) {
+      return `${recorders.length} viewers`
+    } else if (recorders.length == 1) {
+      return recorders[0].name
+    } else {
+      return "No viewers"
+    }
+  })
 
-      return <AstalMenuItem
-        onDestroy={() => label.drop()}>
-        <box>
-          <icon icon={bind(recorder, "icon").as(String)} />
-          <label label={bind(label)} />
-        </box>
-      </AstalMenuItem>
-    }))}
-  </AstalMenu> as Gtk.Menu
+  const classes = "PrivacyIndicator unmuted"
 
-  // Wrap the tray icon in a revealer. We don't want or need a microphone icon unless
-  // something is recording, so only show the icon when recorders are present.
-  return <revealer
-    reveal_child={bind(video, "recorders").as((recorders) => recorders.length > 0)}
-    transition_type={Gtk.RevealerTransitionType.SLIDE_RIGHT}
-    onDestroy={() => {
-      video.disconnect(recorderConnectId)
-      recorder_menu.destroy()
-    }} >
-    <BarItem
-      className="PrivacyIndicator unmuted"
-      onButtonReleaseEvent={(widget, event) => {
-        const [has_button, button] = event.get_button()
-        if (!has_button) {
-          return
-        }
-
-        switch (button) {
-          case 3:
-            recorder_menu.popup_at_widget(widget, Gdk.Gravity.SOUTH_WEST, Gdk.Gravity.NORTH_WEST, event)
-            break;
-        }
-      }}
-      reveal={bind(reveal)}>
-      <label className="fa-solid" label={"\uf03d"} />
-      <label label={bind(video, "recorders").as((recorders) => {
-        if (recorders.length == 0) {
-          return "No recorders"
-        } else if (recorders.length == 1) {
-          return recorders[0].name
-        } else {
-          return `${recorders.length} Recording`
-        }
-      })} />
-    </BarItem>
+  return <revealer reveal_child={hasRecorders} transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT} onDestroy={unsubRecorders}>
+    <box class={classes}>
+      <label class="fa-solid" css="padding-right: 1rem;" label={icon} />
+      <revealer reveal_child={computedReveal} transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT}>
+        <label label={details} />
+      </revealer>
+    </box>
   </revealer>
-}
-
-export default function PrivacyIndicators() {
-  return [ListeningIndicator(), VideoRecordingIndicator()]
 }

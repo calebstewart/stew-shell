@@ -1,23 +1,17 @@
+@use "../components/fontawesome/style.scss";
 @use "../components/bar/style/bar.scss";
 @use "../components/bar/style/bluetooth-menu.scss";
 @use "../components/launcher/style/launcher.scss";
 @use "../components/notifications/style/drawer.scss";
 @use "../components/notifications/style/popup.scss";
+@use "../components/control-panel/style/index.scss";
 @use "../components/settings-menu/style/settings-menu.scss";
 @use "../components/locker/style/main.scss";
-@use "./gtk.scss" as *;
+@use "./colors.scss" as *;
 
-// This is just common in HTML CSS, so it made sense.
+// Just set this here globally
 .fa-solid {
   font-family: "Font Awesome 6 Free";
-}
-
-menu > menuitem > box > icon {
-  margin-right: 0.5rem;
-}
-
-window.PopupCloser {
-  background: gtkalpha($bg-color, 0.8);
 }
 
 .dangerous {
@@ -25,5 +19,5 @@ window.PopupCloser {
 }
 
 .warning {
-  color: $warning;
+  color: $warning; 
 }

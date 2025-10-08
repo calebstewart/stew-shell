@@ -1,21 +1,23 @@
-import { Variable, bind } from "astal"
-import Battery from "gi://AstalBattery"
+import { createBinding, Accessor } from "ags"
+import { Gtk } from "ags/gtk4"
+import AstalBattery from "gi://AstalBattery"
 
-import BarItem, { ToggleForButtonEvent } from "./item"
+export default function Battery({ reveal }: {
+  reveal: Accessor<boolean>,
+}) {
+  const battery = AstalBattery.get_default()
+  const icon = createBinding(battery, "icon_name")
+  const percentage = createBinding(battery, "percentage")
 
-const battery = Battery.get_default()
-const reveal = Variable(false)
-
-export default function BatteryStatus() {
-  if (!battery.get_is_present()) {
-    return
-  }
-
-  return <BarItem
-    className="Battery"
-    onButtonReleaseEvent={(_, e) => ToggleForButtonEvent(e, reveal, 1)}
-    reveal={bind(reveal)}>
-    <icon icon={bind(battery, "icon_name").as(String)} />
-    <label label={bind(battery, "percentage").as((p) => `${p * 100}%`)} />
-  </BarItem>
+  return (
+    <box visible={createBinding(battery, "is_present")}>
+      <image class="icon" icon_name={icon} />
+      <revealer
+        transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT}
+        reveal_child={reveal}
+      >
+        <label label={percentage((v: number) => `${Math.round(v * 100)}%`)} />
+      </revealer>
+    </box>
+  )
 }

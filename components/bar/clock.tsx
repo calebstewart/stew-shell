@@ -1,19 +1,20 @@
-import { bind } from "astal/binding"
-import { Variable } from "astal"
+import { Accessor } from "ags"
+import { Gtk } from "ags/gtk4"
+import { createPoll } from "ags/time"
 
-import BarItem, { ToggleForButtonEvent } from "./item"
+import GLib from "gi://GLib"
 
-const reveal = Variable(true)
+export default function Clock({ reveal }: {
+  reveal: Accessor<boolean>,
+}) {
+  const datetime = createPoll(GLib.DateTime.new_now_local(), 1000, () => {
+    return GLib.DateTime.new_now_local()
+  })
+  const time = datetime((v: GLib.DateTime) => v.format("%R")!)
 
-export const Time = Variable("").poll(1000, "date '+%R %Z'")
-
-export default function Clock() {
-  return <BarItem
-    className="Clock"
-    onButtonReleaseEvent={(_, event) => ToggleForButtonEvent(event, reveal)}
-    reveal={bind(reveal)}>
-    <label className="fa-solid" label={"\uf017"} />
-    <label label={bind(Time).as(String)} />
-  </BarItem>
+  return (
+    <box>
+      <label label={time} />
+    </box >
+  )
 }
-
