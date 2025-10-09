@@ -45,15 +45,16 @@ export function launchApplication(app: AstalApps.Application) {
 
 // A button which shows the icon and name/description of the given application
 // and will launch the application on click.
-export function Application({ app }: {
-  app: AstalApps.Application
+export function Application({ app, onActivate }: {
+  app: AstalApps.Application,
+  onActivate?: (app: AstalApps.Application) => void,
 }) {
   const icon_name = createBinding(app, "icon_name")
   const name = createBinding(app, "name")
 
   return <button
     class="app flat"
-    onClicked={() => launchApplication(app)} >
+    onClicked={() => { launchApplication(app); onActivate && onActivate(app) }} >
     <box>
       <image icon_name={icon_name} />
       <box valign={Gtk.Align.CENTER} orientation={Gtk.Orientation.VERTICAL}>
@@ -86,7 +87,7 @@ export function Launcher(): Gtk.Popover {
         <box spacing={6} orientation={Gtk.Orientation.VERTICAL}>
           <For each={matchingApps}>
             {(app) => (
-              <Application app={app} />
+              <Application app={app} onActivate={() => popover && popover.popdown()} />
             )}
           </For>
           <box halign={Gtk.Align.CENTER} class="not-found" visible={noMatchingApps}>
