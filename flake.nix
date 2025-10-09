@@ -51,6 +51,7 @@
       nativeBuildInputs = with pkgs; [
         wrapGAppsHook
         gobject-introspection
+        glib
         ags.packages.${system}.default
       ];
 
