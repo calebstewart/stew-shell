@@ -1,7 +1,5 @@
-import { Astal, App, Gtk } from "astal/gtk3"
-
-import { DisableNotificationPopup } from "@components/notifications"
-import { PopupWindow, TogglePopup, HidePopup, ShowPopup } from "@components/popup"
+import { Astal, Gtk } from "ags/gtk4"
+import app from "ags/gtk4/app"
 
 import QuickSettings from "./quick-settings"
 import AudioControls from "./audio-controls"

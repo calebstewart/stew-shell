@@ -1,30 +1,12 @@
-import { Variable, bind, Gio } from "astal"
-import { Astal, App, Gtk } from "astal/gtk3"
-import Apps from "gi://AstalApps"
+import { For, createBinding, createState } from "ags"
+import { Gtk } from "ags/gtk4"
+import { interval } from "ags/time"
 
-import { PopupWindow, TogglePopup, HidePopup } from "@components/popup"
-
-import style from "./style/launcher.scss"
+import AstalApps from "gi://AstalApps"
+import Gio from "gi://Gio?version=2.0"
 
 // Export a global instance of the application list
-export const Applications = Apps.Apps.new()
-export const LauncherName = "ApplicationLauncher"
-
-export function IconForClass(apps: Apps.Application[], clazz: string, defaultIcon: string): string {
-  if (Astal.Icon.lookup_icon(clazz) !== null) {
-    return clazz
-  } else {
-    return apps.find((app) => app.wm_class === clazz)?.icon_name || defaultIcon
-  }
-}
-
-export function ToggleLauncherMenu() {
-  return TogglePopup(LauncherName)
-}
-
-export function HideLauncherMenu() {
-  HidePopup(LauncherName)
-}
+export const Apps = AstalApps.Apps.new()
 
 // This will start the given application presuming it has a valid
 // desktop entry. It will start the application without using the
@@ -35,7 +17,7 @@ export function HideLauncherMenu() {
 // to execute the application. The name of the transient unit will be:
 // 'app-{desktop-file-basename}-{random-six-chars}.service'. This is in
 // compliance with the specification here:  https://systemd.io/DESKTOP_ENVIRONMENTS/
-export function Launch(app: Apps.Application) {
+export function launchApplication(app: AstalApps.Application) {
   const entry = Gio.DesktopAppInfo.new(app.entry)
   const basename = app.entry.replace(/\.desktop$/, "")
   const identifier = [1, 2, 3, 4, 5, 6].map((_) => {
@@ -61,74 +43,59 @@ export function Launch(app: Apps.Application) {
   ).wait(null)
 }
 
-export interface ApplicationButtonProps {
-  application: Apps.Application
-}
+// A button which shows the icon and name/description of the given application
+// and will launch the application on click.
+export function Application({ app, onActivate }: {
+  app: AstalApps.Application,
+  onActivate?: (app: AstalApps.Application) => void,
+}) {
+  const icon_name = createBinding(app, "icon_name")
+  const name = createBinding(app, "name")
 
-export function ApplicationButton({ application }: ApplicationButtonProps) {
   return <button
-    className="App"
-    onClicked={() => {
-      Launch(application)
-      HideLauncherMenu()
-    }}>
+    class="app flat"
+    onClicked={() => { launchApplication(app); onActivate && onActivate(app) }} >
     <box>
-      <icon icon={bind(application, "icon_name").as(String)} />
-      <box valign={Gtk.Align.CENTER} vertical>
-        <label
-          className="name"
-          truncate
-          xalign={0}
-          label={bind(application, "name").as(String)} />
-        {application.description && <label
-          className="description"
-          wrap
-          xalign={0}
-          label={application.description} />}
+      <image icon_name={icon_name} />
+      <box valign={Gtk.Align.CENTER} orientation={Gtk.Orientation.VERTICAL}>
+        <label class="name" xalign={0} label={name} />
+        <label class="description" wrap={true} xalign={0} label={app.description} visible={Boolean(app.description)} />
       </box>
     </box>
   </button>
 }
 
-export default function SetupLauncher() {
-  const input = Variable("")
-  const matching_apps = bind(input).as((text) => Applications.fuzzy_query(text).slice(0, 10))
+export function Launcher(): Gtk.Popover {
+  const [input, setInput] = createState("")
+  const matchingApps = input((query) => Apps.fuzzy_query(query))
+  const noMatchingApps = matchingApps((apps) => apps.length == 0)
 
-  return <PopupWindow
-    name={LauncherName}
-    className={LauncherName}
-    namespace={LauncherName}
-    application={App}
-    visible={false}
-    anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.LEFT}
-    keymode={Astal.Keymode.EXCLUSIVE}
-    onShow={() => input.set("")}
-    css={style}>
-    <box className="Launcher" vertical>
-      <entry
-        placeholder_text="Search..."
-        text={bind(input)}
-        onChanged={(e) => input.set(e.text)}
-        onActivate={() => {
-          const apps = matching_apps.get()
-          if (apps.length > 0) {
-            HideLauncherMenu()
-            Launch(apps[0])
-          }
-        }} />
-      <box spacing={6} vertical>
-        {matching_apps.as((apps) => apps.map((app) => (
-          <ApplicationButton application={app} />
-        )))}
-      </box>
-      <box
-        halign={Gtk.Align.CENTER}
-        className="not-found"
-        vertical
-        visible={matching_apps.as((apps) => apps.length === 0)}>
-        <icon icon="system-search-symbolic" />
-        <label label="No match found" />
-      </box>
+  var popover: Gtk.Popover
+
+  const activate = (_: Gtk.SearchEntry) => {
+    const apps = matchingApps.get()
+    if (apps.length > 0) {
+      launchApplication(apps[0])
+      popover.popdown()
+    }
+  }
+
+  return <popover class="launcher" $={(self) => { popover = self; }}>
+    <box orientation={Gtk.Orientation.VERTICAL}>
+      <Gtk.SearchEntry text={input} onSearchChanged={(entry) => setInput(entry.text)} onActivate={activate} />
+      <scrolledwindow propagate_natural_width={true} propagate_natural_height={true}>
+        <box spacing={6} orientation={Gtk.Orientation.VERTICAL}>
+          <For each={matchingApps}>
+            {(app) => (
+              <Application app={app} onActivate={() => popover && popover.popdown()} />
+            )}
+          </For>
+          <box halign={Gtk.Align.CENTER} class="not-found" visible={noMatchingApps}>
+            <image icon_name="system-search-symbolic" />
+            <label label="No matching applications found" />
+          </box>
+        </box>
+      </scrolledwindow>
     </box>
-  </PopupWindow>
+  </popover> as Gtk.Popover
 }

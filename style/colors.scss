@@ -1,0 +1,36 @@
+@use "sass:string";
+
+// Provide access to alpha() for wrapped variables
+@function gtkalpha($c, $a) {
+  @return string.unquote("alpha(#{$c}, #{$a})");
+}
+
+// Same as above for shade()
+@function gtkshade($c, $a) {
+  @return string.unquote("shade(#{$c}, #{$a})");
+}
+
+@function lighter($c) {
+  @return string.unquote("lighter(#{$c})")
+}
+
+@function darker($c) {
+  @return string.unquote("darker(#{$c})")
+}
+
+@function mix($c1, $c2, $percent) {
+  @return string.unquote("mix(#{$c1},#{$c2},#{$percent})")
+}
+
+// Define some useful aliases of CSS variables in GTK themes
+$fg-color: #{"@theme_fg_color"};
+$bg-color: #{"@theme_bg_color"};
+$error: #{"@error_color"};
+$warning: #{"@warning_color"};
+$borders: #{"@borders"};
+$selected-fg-color: #{"@theme_selected_fg_color"};
+
+// Just set this here globally
+.fa-solid {
+  font-family: "Font Awesome 6 Free";
+}

@@ -1,80 +1,79 @@
 {
-  description = "Stew Shell - Custom Desktop Shell for Hyprland using AGS/Astal";
+  description = "Stew Shell - Graphical Shell for StewOS";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
 
+    astal = {
+      url = "github:aylur/astal";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     ags = {
       url = "github:aylur/ags";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.astal.follows = "astal";
     };
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    ags,
-  }: let
+  outputs = {self, nixpkgs, ags, astal}:
+  let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
-  in {
-    packages.${system} = {
-      default = ags.lib.bundle {
-        inherit pkgs;
-        src = ./.;
-        name = "stew-shell";
-        entry = "app.ts";
+    pname = "stew-shell";
+    entry = "app.tsx";
 
-        # additional libraries and executables to add to gjs' runtime
-        extraPackages = [
-          ags.packages.${system}.battery
-          ags.packages.${system}.hyprland
-          ags.packages.${system}.network
-          ags.packages.${system}.notifd
-          ags.packages.${system}.apps
-          ags.packages.${system}.bluetooth
-          ags.packages.${system}.mpris
-          ags.packages.${system}.wireplumber
-          ags.packages.${system}.tray
-          ags.packages.${system}.auth
-          pkgs.gtk-session-lock.dev
-          pkgs.glib
-          pkgs.polkit
-          # pkgs.fzf
-        ];
-      };
+    extraPackages = with pkgs; [
+      libadwaita
+      libsoup_3
+      glib
+    ] ++ (with astal.packages.${system}; [
+      astal4
+      battery
+      powerprofiles
+      hyprland
+      network
+      notifd
+      apps
+      bluetooth
+      mpris
+      wireplumber
+      tray
+      auth
+      io
+    ]);
+  in {
+    packages.${system}.default = pkgs.stdenv.mkDerivation {
+      name = pname;
+      meta.mainProgram = pname;
+      src = ./.;
+
+      nativeBuildInputs = with pkgs; [
+        wrapGAppsHook
+        gobject-introspection
+        ags.packages.${system}.default
+      ];
+
+      buildInputs = extraPackages ++ [pkgs.gjs];
+
+      installPhase = ''
+        runHook preInstall
+
+        mkdir -p $out/bin
+        mkdir -p $out/share
+        cp -r * $out/share
+        ags bundle ${entry} $out/bin/${pname} -d "SRC='$out/share'"
+
+        runHook postInstall
+      '';
     };
 
     devShells.${system} = {
       default = pkgs.mkShell {
-        buildInputs = (with pkgs; [
-          blueprint-compiler
-          gtk4
-          gtk4-layer-shell
-          gobject-introspection
-          gobject-introspection-unwrapped
+        buildInputs = [
           pkgs.glib
-        ]) ++ [
-          # includes all Astal libraries
-          # ags.packages.${system}.agsFull
-
-          # includes astal3 astal4 astal-io by default
           (ags.packages.${system}.default.override {
-            extraPackages = [
-              # cherry pick packages
-              ags.packages.${system}.battery
-              ags.packages.${system}.hyprland
-              ags.packages.${system}.network
-              ags.packages.${system}.notifd
-              ags.packages.${system}.apps
-              ags.packages.${system}.bluetooth
-              ags.packages.${system}.mpris
-              ags.packages.${system}.wireplumber
-              ags.packages.${system}.tray
-              ags.packages.${system}.auth
-              pkgs.gtk-session-lock.dev
-              pkgs.polkit
-            ];
+            inherit extraPackages;
           })
         ];
       };

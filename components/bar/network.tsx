@@ -1,59 +1,74 @@
-import { Variable } from "astal"
-import { bind } from "astal/binding"
+import { Accessor, createBinding, With } from "ags"
+import { Gtk } from "ags/gtk4"
 import Network from "gi://AstalNetwork"
-
-import BarItem, { ToggleForButtonEvent } from "./item"
+import NM from "gi://NM?version=1.0"
 
 const network = Network.get_default()
-const reveal_wired = Variable(false)
-const reveal_wireless = Variable(false)
 
-export function WiredStatus() {
-  return bind(network, "wired").as((wired) => {
-    if (wired === null) {
-      return <box />
-    } else {
-      return <BarItem
-        className="WiredNetwork"
-        onButtonReleaseEvent={(_, e) => ToggleForButtonEvent(e, reveal_wired, 1)}
-        reveal={bind(reveal_wired)}>
-        <icon icon={bind(wired, "icon_name").as(String)} />
-        <label label={bind(wired, "device").as((device) => {
-          const ip4 = device.ip4_config
-          if (ip4 && ip4.get_addresses().length > 0) {
-            return ip4.get_addresses()[0].get_address()
-          } else {
-            return "No address"
-          }
-        })} />
-      </BarItem>
-    }
-  })
+export function WiredStatus({ reveal }: {
+  reveal: Accessor<boolean>,
+}) {
+
+  return <With value={createBinding(network, "wired")}>
+    {(wired: Network.Wired) => {
+      if (wired === null) {
+        return null
+      }
+
+      const ip4_config = createBinding(wired.device, "ip4_config")
+      const ip4_address = ip4_config((cfg: NM.IPConfig) => {
+        if (cfg && cfg.addresses.length > 0) {
+          return cfg.addresses[0].address
+        } else {
+          return "No address"
+        }
+      })
+
+      return (<box visible={wired !== null}>
+        <image class="icon" icon_name={createBinding(wired, "icon_name")} />
+        <revealer
+          reveal_child={reveal}
+          transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT}
+        >
+          <label label={ip4_address} />
+        </revealer>
+      </box>)
+    }}
+  </With>
 }
 
-export function WirelessStatus() {
-  return bind(network, "wifi").as((wifi) => {
-    if (wifi === null) {
-      return <box />
-    } else {
-      return <BarItem
-        className="WirelessNetwork"
-        onButtonReleaseEvent={(_, e) => ToggleForButtonEvent(e, reveal_wireless, 1)}
-        reveal={bind(reveal_wireless)}>
-        <icon icon={bind(wifi, "icon_name").as(String)} />
-        <label label={bind(wifi, "state").as((state) => {
-          const ssid = wifi.ssid
+export function WirelessStatus({ reveal }: {
+  reveal: Accessor<boolean>,
+}) {
+  return <With value={createBinding(network, "wifi")}>
+    {(wifi: Network.Wifi) => {
+      if (wifi === null) {
+        return null
+      }
 
-          if (state == Network.DeviceState.ACTIVATED) {
-            return `${ssid}`
-          } else if (state == Network.DeviceState.DISCONNECTED) {
-            return `Disconnected`
-          } else {
-            return `${ssid} (${state.toString()})`
-          }
-        })} />
-      </BarItem>
-    }
-  })
+      const state = createBinding(wifi, "state")
+      const label = state((state: Network.DeviceState) => {
+        const ssid = wifi.ssid
+
+        if (state == Network.DeviceState.ACTIVATED) {
+          return wifi.ssid
+        } else if (state == Network.DeviceState.DISCONNECTED) {
+          return "Disconnected"
+        } else {
+          return `${ssid} (${state.toString()})`
+        }
+      })
+
+      return (<box visible={wifi !== null}>
+        <image class="icon" icon_name={createBinding(wifi, "icon_name")} />
+        <revealer
+          reveal_child={reveal}
+          transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT}
+        >
+          <label label={label} />
+        </revealer>
+      </box>)
+    }}
+  </With>
 }
 

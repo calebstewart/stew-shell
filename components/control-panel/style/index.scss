@@ -1,0 +1,114 @@
+@use "../../../style/gtk.scss" as *;
+
+.control-panel {
+  // min-width: 600px;
+
+  > contents {
+    background: gtkalpha(gtkshade($bg-color, 0.6), 0.5);
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  
+  > arrow {
+    background: transparent;
+  }
+
+  > contents > box {
+    background: transparent;
+
+    > * {
+      background-color: $bg-color;
+      margin-left: 0;
+      margin-right: 0;
+      margin-bottom: 0;
+      border-radius: 10px;
+    }
+
+    > *:not(:first-child) {
+      margin-top: 1rem;
+    }
+  }
+
+  separator {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .toolbar {
+    .icon {
+      margin-right: 0.3rem;
+      font-size: 14pt;
+    }
+
+    .header {
+      font-weight: bold;
+      font-size: 14pt;
+    }
+
+    .subheader {
+      font-weight: lighter;
+      font-size: 10pt;
+    }
+
+    button {
+      margin-left: 0.25rem;
+      margin-right: 0.25rem;
+    }
+  }
+
+  .system-controls {
+    padding: 0.5rem;
+  }
+}
+
+.notification {
+  padding: 0.5rem;
+
+  .content {
+    box.image {
+      border: 1px solid gtkalpha($fg-color, 0.02);
+      margin-right: 0.5rem;
+      border-radius: 9px;
+      min-width: 100px;
+      min-height: 100px;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    image {
+      min-width: 100px;
+      min-height: 100px;
+      border-radius: 9px;
+      margin-right: 0.5rem;
+      border: 1px solid gtkalpha($fg-color, 0.02);
+    }
+
+    label.summary {
+      font-size: 1.2em;
+      color: $fg-color;
+    }
+
+    label.body {
+      color: gtkalpha($fg-color, 0.8);
+    }
+  }
+
+  .actions {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+
+    button {
+      margin: 0 0.3rem;
+
+      &:first-child {
+        margin-left: 0;
+      }
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}

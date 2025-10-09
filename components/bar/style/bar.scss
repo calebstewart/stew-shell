@@ -1,110 +1,86 @@
 /**
  * Status Bar Style Sheet
  */
-@use "../../../style/gtk" as *;
+@use "../../../style/colors.scss" as *;
 
 window.Bar {
-  // font-family: JetBrainsMono, "Noto Color Emoji";
-  background: $bg-color;
+  background-color: $bg-color;
   color: $fg-color;
 
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+
   > * {
-    padding: 0.5em;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  box.Bar {
+    background-color: transparent;
+
+    menubutton {
+      button.toggle {
+        color: $fg-color;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      button.toggle:hover, button.toggle:checked {
+        color: lighter($fg-color);
+        background: darker($bg-color);
+      }
+
+      box {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+      }
+    }
+  }
+
+  box.active_workspace {
+    label {
+      font-size: 12pt;
+    }
+
+    image.icon {
+      font-size: 16pt;
+      margin-right: 4pt;
+    }
   }
 }
 
-centerbox.Bar {
-  button {
+.PrivacyIndicator.unmuted {
+  animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
+
+  @keyframes unmuted-flash {
+    0% { background-color: $error; }
+    100% { background-color: $bg-color; }
+  }
+}
+
+.PrivacyIndicator.muted {
+  animation: muted-flash 2s ease-in-out 0s infinite alternate;
+
+  @keyframes muted-flash {
+    0% { background-color: gtkshade($fg-color, 1.5); color: gtkshade($bg-color, 0.67); }
+    100% { background-color: $bg-color; color: $fg-color; }
+  }
+}
+
+.icon {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+}
+
+box.workspaces {
+  button.toggle {
     color: $fg-color;
     background: transparent;
     box-shadow: none;
   }
 
-  button:hover {
-    color: gtkshade($fg-color, 1.2);
-    background: gtkalpha($bg-color, 0.9);
-  }
-
-  .ActiveClient {
-    background-color: $bg-color;
-  }
-
-  .ActiveClient label {
-    font-size: 12pt;
-  }
-
-  .ActiveClient icon {
-    font-size: 16pt;
-    margin-right: 4pt;
-  }
-
-  .Workspaces > button {
-    color: gtkshade($fg-color, 0.8);
-    box-shadow: none;
-    margin: 0 1rem;
-  }
-
-  .Workspaces > button:hover {
-    color: gtkshade($fg-color, 0.9);
-  }
-
-  .Workspaces > button.focused {
-    color: $fg-color;
-    font-weight: bold;
-  }
-
-  .Workspaces > button.focused:hover {
-    color: gtkshade($fg-color, 1.1);
-  }
-
-  .IconLabel {
-    margin-left: 1em;
-  }
-
-  .BarItem {
-    .BarItemContainer > revealer > * {
-      margin-right: 0.5rem;
-    }
-    
-    .BarItemContainer > .fa-solid {
-      font-size: 12pt;
-      margin: 0 0.5rem;
-    }
-
-    .BarItemContainer > icon {
-      font-size: 12pt;
-      margin: 0 0.5rem;
-    }
-  }
-
-  .NotificationDrawer {
-    color: $fg-color;
-  }
-
-  .NotificationDrawer.has-notifications {
-    animation: notification-highlight 0.5s forwards ease-in 0s 1 normal;
-
-    @keyframes notification-highlight {
-      0% { color: $fg-color; }
-      100% { color: mix($fg-color, blue, 0.4); }
-    }
-  }
-
-  .PrivacyIndicator.unmuted {
-    animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
-
-    @keyframes unmuted-flash {
-      0% { background-color: $error; }
-      100% { background-color: $bg-color; }
-    }
-  }
-
-  .PrivacyIndicator.muted {
-    animation: muted-flash 2s ease-in-out 0s infinite alternate;
-
-    @keyframes muted-flash {
-      0% { background-color: gtkshade($fg-color, 1.5); color: gtkshade($bg-color, 0.67); }
-      100% { background-color: $bg-color; color: $fg-color; }
-    }
+  button.toggle:hover, button.toggle:checked {
+    color: lighter($fg-color);
+    background: darker($bg-color);
   }
 }

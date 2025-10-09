@@ -1,73 +1,118 @@
-import { Astal, App, Gtk, Gdk } from "astal/gtk3"
+import app from "ags/gtk4/app"
+import { For, createBinding } from "ags"
+import { Astal, Gtk, Gdk } from "ags/gtk4"
+import { Accessor, createComputed, onCleanup, createState } from "ags"
+import Tray from "gi://AstalTray"
 
-import { ActiveClient, Workspaces } from "@components/hyprland"
-import { SettingsMenuButton } from "@components/settings-menu"
-import Embermug, { TemperatureUnit } from "@components/embermug"
-import RegisterPerMonitorWindows from "@components/per-monitor"
-import { NotificationDrawerButton } from "@components/notifications"
+import { Workspaces } from "./workspaces"
+import { ActiveWorkspace } from "./active-workspace"
+// import { SettingsMenuButton } from "@components/settings-menu"
+// import Embermug, { TemperatureUnit } from "@components/embermug"
+// import RegisterPerMonitorWindows from "@components/per-monitor"
+// import { NotificationDrawerButton } from "@components/notifications"
 
-import PrivacyIndicators from "./privacy"
+// import PrivacyIndicators from "./privacy"
+import { ListeningIndicator, VideoRecordingIndicator } from "./privacy"
 import { WiredStatus, WirelessStatus } from "./network"
 import Bluetooth from "./bluetooth"
 import Clock from "./clock"
-import TrayItems from "./tray"
-import BatteryStatus from "./battery"
-import style from "./style/bar.scss"
+import TrayItem from "./tray"
+// import TrayItems from "./tray"
+import Battery from "./battery"
 
-export { default as BarItem } from "./item"
-export { default as PrivacyIndicators } from "./privacy"
-export { WiredStatus, WirelessStatus } from "./network"
-export { default as Bluetooth } from "./bluetooth"
-export { default as Clock } from "./clock"
-export { default as TrayItems } from "./tray"
+import ControlPanel from "@components/control-panel"
+
+// export { default as BarItem } from "./item"
+// export { default as PrivacyIndicators } from "./privacy"
+// export { WiredStatus, WirelessStatus } from "./network"
+// export { default as Bluetooth } from "./bluetooth"
+// export { default as Clock } from "./clock"
+// export { default as TrayItems } from "./tray"
+export { ToggleLauncher } from "./active-workspace"
 
 const Anchor = Astal.WindowAnchor
-const bar_registry = new Map<Gdk.Monitor, Gtk.Widget>()
 
-function StartBlock(_monitor: Gdk.Monitor, index: number) {
-  return <box className="StartBlock" halign={Gtk.Align.START}>
-    {ActiveClient(index)}
+function StartBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
+  return <box class="StartBlock" $type="start">
+    <ActiveWorkspace gdkmonitor={monitor} index={index} />
   </box>
 }
 
-function CenterBlock(_monitor: Gdk.Monitor, index: number) {
-  return <box className="CenterBlock" halign={Gtk.Align.CENTER}>
-    {Workspaces(index)}
+function CenterBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
+  return <box class="CenterBlock" $type="center">
+    <Workspaces index={index} />
   </box>
 }
 
-function EndBlock(_monitor: Gdk.Monitor, _index: number) {
-  return <box className="EndBlock" halign={Gtk.Align.END}>
-    {TrayItems()}
-    {Embermug(TemperatureUnit.FAHRENHEIT)}
-    {Bluetooth()}
-    {WiredStatus()}
-    {WirelessStatus()}
-    {PrivacyIndicators()}
-    {BatteryStatus()}
-    {Clock()}
-    {NotificationDrawerButton()}
-    {SettingsMenuButton()}
-  </box>
+function EndBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
+  // All individual icons are revealed by one state variable. The reveal is automatically
+  // set on-hover of the end block, and should remain open as long 
+  const tray = Tray.get_default()
+  const trayItems = createBinding(tray, "items")
+  const [hover, setHover] = createState(false);
+  const motionController = new Gtk.EventControllerMotion();
+  const motionControllerIDs = [
+    motionController.connect("enter", () => setHover(true)),
+    motionController.connect("leave", () => setHover(false)),
+  ];
+  var [popoverVisible, setPopoverVisible] = createState(false);
+
+  const reveal = createComputed([popoverVisible, hover], (popover, hover) => (popover || hover))
+
+  const onDestroy = (button: Gtk.MenuButton) => {
+    button.remove_controller(motionController);
+    motionControllerIDs.forEach((id) => motionController.disconnect(id));
+  };
+
+  const onSetup = (button: Gtk.MenuButton) => {
+    button.add_controller(motionController);
+  };
+
+  return <box class="EndBlock" $type="end">
+    <menubutton
+      visible={true}
+      always_show_arrow={false}
+      direction={Gtk.ArrowType.NONE}
+      onDestroy={onDestroy}
+      $={onSetup}
+    >
+      <box class="IconContainer" orientation={Gtk.Orientation.HORIZONTAL}>
+        <box>
+          <For each={trayItems}>
+            {(item) => <TrayItem reveal={reveal} item={item} />}
+          </For>
+        </box>
+        <VideoRecordingIndicator reveal={reveal} />
+        <ListeningIndicator reveal={reveal} />
+        <WiredStatus reveal={reveal} />
+        <WirelessStatus reveal={reveal} />
+        <Bluetooth reveal={reveal} />
+        <Battery reveal={reveal} />
+        <Clock reveal={reveal} />
+      </box>
+      <popover class="control-panel" onShow={() => setPopoverVisible(true)} onHide={() => setPopoverVisible(false)}>
+        <ControlPanel />
+      </popover>
+    </menubutton >
+  </box >
 }
 
-export function SetupBar(monitor: Gdk.Monitor, index: number) {
+export function Bar({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
+  const name = createComputed((get) => `Bar${get(index)}`);
+  const clazz = createComputed((get) => `Bar Monitor${get(index)}`);
+
   return <window
-    name={`Bar${index}`}
-    className={`Bar Monitor${index}`}
+    name={name}
+    class={clazz}
     gdkmonitor={monitor}
     exclusivity={Astal.Exclusivity.EXCLUSIVE}
     anchor={Anchor.TOP | Anchor.LEFT | Anchor.RIGHT}
-    application={App}
-    css={style}>
-    <centerbox className="Bar">
-      {StartBlock(monitor, index)}
-      {CenterBlock(monitor, index)}
-      {EndBlock(monitor, index)}
+    $={(self) => onCleanup(() => self.destroy())}
+    visible>
+    <centerbox class="Bar" orientation={Gtk.Orientation.HORIZONTAL}>
+      <StartBlock monitor={monitor} index={index} />
+      <CenterBlock monitor={monitor} index={index} />
+      <EndBlock monitor={monitor} index={index} />
     </centerbox>
   </window>
-}
-
-export default function SetupBars() {
-  return RegisterPerMonitorWindows(bar_registry, SetupBar)
 }
