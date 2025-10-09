@@ -82,7 +82,11 @@ export function Launcher(): Gtk.Popover {
 
   return <popover class="launcher" $={(self) => { popover = self; }}>
     <box orientation={Gtk.Orientation.VERTICAL}>
-      <Gtk.SearchEntry text={input} onSearchChanged={(entry) => setInput(entry.text)} onActivate={activate} />
+      <Gtk.SearchEntry
+        text={input}
+        onSearchChanged={(entry) => setInput(entry.text)}
+        onActivate={activate}
+        onStopSearch={() => popover && popover.popdown()} />
       <scrolledwindow propagate_natural_width={true} propagate_natural_height={true}>
         <box spacing={6} orientation={Gtk.Orientation.VERTICAL}>
           <For each={matchingApps}>
