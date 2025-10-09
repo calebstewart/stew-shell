@@ -26,6 +26,7 @@
     extraPackages = with pkgs; [
       libadwaita
       libsoup_3
+      glib
     ] ++ (with astal.packages.${system}; [
       astal4
       battery
@@ -70,6 +71,7 @@
     devShells.${system} = {
       default = pkgs.mkShell {
         buildInputs = [
+          pkgs.glib
           (ags.packages.${system}.default.override {
             inherit extraPackages;
           })

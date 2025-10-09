@@ -1,5 +1,6 @@
 import { Gtk, Gdk } from "ags/gtk4"
-import { With, For, createBinding } from "ags"
+import { With, For, createBinding, createState } from "ags"
+import { timeout } from "ags/time"
 
 import Gio from "gi://Gio?version=2.0"
 import GLib from "gi://GLib?version=2.0"
@@ -34,7 +35,6 @@ function iconExists(icon: string | null | undefined): boolean {
 }
 
 function NotificationImage({ image }: { image: string | null | undefined }) {
-  console.log(`image: ${image}`)
   if (image === null || image === undefined) {
     return <box class="image" visible={false} />
   } else if (pathExists(image)) {

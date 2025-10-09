@@ -1,5 +1,5 @@
 import { Gtk } from "ags/gtk4"
-import { For, createBinding, createState } from "ags"
+import { For, createBinding, createState, createComputed } from "ags"
 import { createPoll } from "ags/time"
 
 import GLib from "gi://GLib"
@@ -10,11 +10,16 @@ import AstalPowerProfiles from "gi://AstalPowerProfiles"
 import AstalNotifd from "gi://AstalNotifd"
 
 import { Notification } from "./notifd"
+import { BatteryStateToLabel } from "@components/bar/battery"
 
 function SystemControls({ }: {}) {
   const battery = AstalBattery.get_default()
   const batteryIcon = createBinding(battery, "icon_name")
-  const batteryTooltip = createBinding(battery, "percentage")((v) => `${Math.round(v * 100)}%`)
+  const batteryPercentage = createBinding(battery, "percentage")
+  const batteryState = createBinding(battery, "state")
+  const batteryTooltip = createComputed([batteryPercentage, batteryState], (percentage, state) => (
+    `${BatteryStateToLabel(state)} (${Math.round(percentage * 100)}%)`
+  ))
   const datetime = createPoll(GLib.DateTime.new_now_local(), 1000, () => (
     GLib.DateTime.new_now_local()
   ))
@@ -81,13 +86,18 @@ function SystemControls({ }: {}) {
 export default function ControlPanel() {
   const notifd = AstalNotifd.get_default()
   const notifications = createBinding(notifd, "notifications")
+  const hasNotifications = notifications((notifications) => notifications.length > 0)
 
   return <box orientation={Gtk.Orientation.VERTICAL}>
     <SystemControls />
-    <For each={notifications}>
-      {(notification) => (
-        <Notification notification={notification} />
-      )}
-    </For>
+    <scrolledwindow propagate_natural_width={true} propagate_natural_height={true} visible={hasNotifications}>
+      <box orientation={Gtk.Orientation.VERTICAL}>
+        <For each={notifications}>
+          {(notification) => (
+            <Notification notification={notification} />
+          )}
+        </For>
+      </box>
+    </scrolledwindow>
   </box>
 }

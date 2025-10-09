@@ -28,6 +28,7 @@ import ControlPanel from "@components/control-panel"
 // export { default as Bluetooth } from "./bluetooth"
 // export { default as Clock } from "./clock"
 // export { default as TrayItems } from "./tray"
+export { ToggleLauncher } from "./active-workspace"
 
 const Anchor = Astal.WindowAnchor
 

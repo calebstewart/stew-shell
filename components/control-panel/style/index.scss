@@ -61,53 +61,53 @@
   .system-controls {
     padding: 0.5rem;
   }
+}
 
-  .notification {
-    padding: 0.5rem;
+.notification {
+  padding: 0.5rem;
 
-    .content {
-      box.image {
-        border: 1px solid gtkalpha($fg-color, 0.02);
-        margin-right: 0.5rem;
-        border-radius: 9px;
-        min-width: 100px;
-        min-height: 100px;
-        background-size: cover;
-        background-position: center;
-      }
-      
-      image {
-        min-width: 100px;
-        min-height: 100px;
-        border-radius: 9px;
-        margin-right: 0.5rem;
-        border: 1px solid gtkalpha($fg-color, 0.02);
-      }
-
-      label.summary {
-        font-size: 1.2em;
-        color: $fg-color;
-      }
-
-      label.body {
-        color: gtkalpha($fg-color, 0.8);
-      }
+  .content {
+    box.image {
+      border: 1px solid gtkalpha($fg-color, 0.02);
+      margin-right: 0.5rem;
+      border-radius: 9px;
+      min-width: 100px;
+      min-height: 100px;
+      background-size: cover;
+      background-position: center;
+    }
+    
+    image {
+      min-width: 100px;
+      min-height: 100px;
+      border-radius: 9px;
+      margin-right: 0.5rem;
+      border: 1px solid gtkalpha($fg-color, 0.02);
     }
 
-    .actions {
-      margin-top: 1rem;
-      margin-bottom: 1rem;
+    label.summary {
+      font-size: 1.2em;
+      color: $fg-color;
+    }
 
-      button {
-        margin: 0 0.3rem;
+    label.body {
+      color: gtkalpha($fg-color, 0.8);
+    }
+  }
 
-        &:first-child {
-          margin-left: 0;
-        }
+  .actions {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
 
-        &:last-child {
-          margin-right: 0;
-        }
+    button {
+      margin: 0 0.3rem;
+
+      &:first-child {
+        margin-left: 0;
+      }
+
+      &:last-child {
+        margin-right: 0;
       }
     }
   }
