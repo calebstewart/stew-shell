@@ -1,5 +1,5 @@
 import { Gtk } from "ags/gtk4"
-import { createBinding, createState } from "ags"
+import { For, createBinding, createState } from "ags"
 import { createPoll } from "ags/time"
 
 import GLib from "gi://GLib"
@@ -7,31 +7,35 @@ import AstalBattery from "gi://AstalBattery"
 import AstalNetwork from "gi://AstalNetwork"
 import AstalBluetooth from "gi://AstalBluetooth"
 import AstalPowerProfiles from "gi://AstalPowerProfiles"
+import AstalNotifd from "gi://AstalNotifd"
 
-export default function ControlPanel() {
+import { Notification } from "./notifd"
+
+function SystemControls({ }: {}) {
   const battery = AstalBattery.get_default()
   const batteryIcon = createBinding(battery, "icon_name")
+  const batteryTooltip = createBinding(battery, "percentage")((v) => `${Math.round(v * 100)}%`)
   const datetime = createPoll(GLib.DateTime.new_now_local(), 1000, () => (
     GLib.DateTime.new_now_local()
   ))
-  const date = datetime((v: GLib.DateTime) => v.format("%A, %d %b")!)
+  const date = datetime((v: GLib.DateTime) => v.format("%A, %d %b %Y")!)
   const network = AstalNetwork.get_default()
   const bluetooth = AstalBluetooth.get_default()
   const powerProfiles = AstalPowerProfiles.get_default()
   const [revealPower, setRevealPower] = createState(false)
 
 
-  return <box class="control-panel" orientation={Gtk.Orientation.VERTICAL}>
-    <centerbox class="system-controls">
-      <box hexpand={true} $type="start">
-        <label label={date} />
+  return <box class="system-controls" orientation={Gtk.Orientation.VERTICAL}>
+    <centerbox class="toolbar">
+      <box $type="start">
+        <label class="header" label={date} />
       </box>
-      <box hexpand={true} $type="center" />
-      <box hexpand={true} $type="end">
-        <button icon_name={batteryIcon} />
-        <button icon_name="system-lock-screen-symbolic" />
-        <button icon_name="system-reboot-symbolic" />
-        <button icon_name="system-shutdown-symbolic" />
+      <box $type="center" />
+      <box $type="end">
+        <button icon_name={batteryIcon} tooltip_text={batteryTooltip} />
+        <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" />
+        <button icon_name="system-reboot-symbolic" tooltip_text="Reboot" />
+        <button icon_name="system-shutdown-symbolic" tooltip_text="Shutdown" />
       </box>
     </centerbox >
     <revealer reveal_child={revealPower} transition_type={Gtk.RevealerTransitionType.SLIDE_DOWN}>
@@ -72,4 +76,18 @@ export default function ControlPanel() {
       </Gtk.FlowBoxChild>
     </Gtk.FlowBox>
   </box >
+}
+
+export default function ControlPanel() {
+  const notifd = AstalNotifd.get_default()
+  const notifications = createBinding(notifd, "notifications")
+
+  return <box orientation={Gtk.Orientation.VERTICAL}>
+    <SystemControls />
+    <For each={notifications}>
+      {(notification) => (
+        <Notification notification={notification} />
+      )}
+    </For>
+  </box>
 }

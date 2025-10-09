@@ -89,7 +89,7 @@ function EndBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<nu
         <Battery reveal={reveal} />
         <Clock reveal={reveal} />
       </box>
-      <popover onShow={() => setPopoverVisible(true)} onHide={() => setPopoverVisible(false)}>
+      <popover class="control-panel" onShow={() => setPopoverVisible(true)} onHide={() => setPopoverVisible(false)}>
         <ControlPanel />
       </popover>
     </menubutton >
