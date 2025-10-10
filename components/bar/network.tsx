@@ -1,4 +1,4 @@
-import { Accessor, createBinding, With } from "ags"
+import { Accessor, createBinding, createComputed, With } from "ags"
 import { Gtk } from "ags/gtk4"
 import Network from "gi://AstalNetwork"
 import NM from "gi://NM?version=1.0"
@@ -15,24 +15,36 @@ export function WiredStatus({ reveal }: {
         return null
       }
 
-      const ip4_config = createBinding(wired.device, "ip4_config")
-      const ip4_address = ip4_config((cfg: NM.IPConfig) => {
-        if (cfg && cfg.addresses.length > 0) {
-          return cfg.addresses[0].address
-        } else {
-          return "No address"
-        }
-      })
+      const iconName = createBinding(wired, "icon_name")
 
-      return (<box visible={wired !== null}>
-        <image class="icon" icon_name={createBinding(wired, "icon_name")} />
-        <revealer
-          reveal_child={reveal}
-          transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT}
-        >
-          <label label={ip4_address} />
-        </revealer>
-      </box>)
+      return <box>
+        <With value={createBinding(wired, "device")}>
+          {(device: NM.DeviceEthernet) => {
+            if (device === null) {
+              return null
+            }
+
+            const ip4_config = createBinding(wired.device, "ip4_config")
+            const ip4_address = ip4_config((cfg: NM.IPConfig) => {
+              if (cfg && cfg.addresses && cfg.addresses.length > 0) {
+                return cfg.addresses[0].address
+              } else {
+                return "No address"
+              }
+            })
+
+            return <box>
+              <image class="icon" icon_name={iconName} />
+              <revealer
+                reveal_child={reveal}
+                transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT}
+              >
+                <label label={ip4_address} />
+              </revealer>
+            </box>
+          }}
+        </With>
+      </box>
     }}
   </With>
 }
@@ -47,11 +59,10 @@ export function WirelessStatus({ reveal }: {
       }
 
       const state = createBinding(wifi, "state")
-      const label = state((state: Network.DeviceState) => {
-        const ssid = wifi.ssid
-
+      const ssid = createBinding(wifi, "ssid")
+      const label = createComputed([state, ssid], (state, ssid) => {
         if (state == Network.DeviceState.ACTIVATED) {
-          return wifi.ssid
+          return ssid
         } else if (state == Network.DeviceState.DISCONNECTED) {
           return "Disconnected"
         } else {

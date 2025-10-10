@@ -71,13 +71,20 @@ export function Launcher(): Gtk.Popover {
   const noMatchingApps = matchingApps((apps) => apps.length == 0)
 
   var popover: Gtk.Popover
+  var searchEntry: Gtk.SearchEntry
 
   const activate = (_: Gtk.SearchEntry) => {
     const apps = matchingApps.get()
     if (apps.length > 0) {
       launchApplication(apps[0])
+      searchEntry.text = ""
       popover.popdown()
     }
+  }
+
+  const stopSearch = () => {
+    searchEntry && searchEntry.set_text("")
+    popover && popover.popdown()
   }
 
   return <popover class="launcher" $={(self) => { popover = self; }}>
@@ -86,12 +93,13 @@ export function Launcher(): Gtk.Popover {
         text={input}
         onSearchChanged={(entry) => setInput(entry.text)}
         onActivate={activate}
-        onStopSearch={() => popover && popover.popdown()} />
+        onStopSearch={stopSearch}
+        $={(self) => { searchEntry = self; }} />
       <scrolledwindow propagate_natural_width={true} propagate_natural_height={true}>
         <box spacing={6} orientation={Gtk.Orientation.VERTICAL}>
           <For each={matchingApps}>
             {(app) => (
-              <Application app={app} onActivate={() => popover && popover.popdown()} />
+              <Application app={app} onActivate={() => stopSearch()} />
             )}
           </For>
           <box halign={Gtk.Align.CENTER} class="not-found" visible={noMatchingApps}>
