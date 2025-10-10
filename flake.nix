@@ -16,25 +16,33 @@
     };
   };
 
-  outputs = {self, nixpkgs, ags, astal}:
+  outputs = {self, nixpkgs, ags, astal}@rawInputs:
   let
-    system = "x86_64-linux";
-    extraPackages = {
-      ags = ags.packages.${system}.default;
-      astal = astal.packages.${system};
-    };
+    supportedSystems = ["x86_64-linux" "aarch64-linux"];
+    forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+    pkgsForSystem = system: (import nixpkgs {
+      inherit system;
+    });
 
-    callPackage = nixpkgs.lib.callPackageWith pkgs;
-    pkgs = nixpkgs.legacyPackages.${system} // {
-      ags = ags.packages.${system}.default;
-      astal = astal.packages.${system};
-      stew-shell = callPackage ./nix/packages/default.nix { };
-      gtk4-session-lock = callPackage ./nix/packages/gtk4-session-lock { };
+    inputs = rawInputs // {
+      stew-shell = self;
     };
   in {
-    packages.${system} = rec {
+    packages = forAllSystems (system: let
+      callPackage = nixpkgs.lib.callPackageWith pkgs;
+      pkgs = (pkgsForSystem system) // {
+        ags = ags.packages.${system}.default;
+        astal = astal.packages.${system};
+        stew-shell = callPackage ./nix/packages/default.nix { };
+        gtk4-session-lock = callPackage ./nix/packages/gtk4-session-lock { };
+      };
+    in {
       inherit (pkgs) stew-shell gtk4-session-lock;
       default = pkgs.stew-shell;
+    });
+
+    homeModules = {
+      default = import ./nix/modules/default.nix inputs;
     };
   };
 }
