@@ -18,62 +18,23 @@
 
   outputs = {self, nixpkgs, ags, astal}:
   let
-    lib = nixpkgs.lib;
     system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-    pname = "stew-shell";
-    entry = "app.tsx";
+    extraPackages = {
+      ags = ags.packages.${system}.default;
+      astal = astal.packages.${system};
+    };
 
-    extraPackages = with pkgs; [
-      libadwaita
-      libsoup_3
-      glib
-    ] ++ (with astal.packages.${system}; [
-      astal4
-      battery
-      powerprofiles
-      hyprland
-      network
-      notifd
-      apps
-      bluetooth
-      mpris
-      wireplumber
-      tray
-      auth
-      io
-    ]);
-
-    agsPackage = ags.packages.${system}.default.override {
-      inherit extraPackages;
+    callPackage = nixpkgs.lib.callPackageWith pkgs;
+    pkgs = nixpkgs.legacyPackages.${system} // {
+      ags = ags.packages.${system}.default;
+      astal = astal.packages.${system};
+      stew-shell = callPackage ./nix/packages/default.nix { };
+      gtk4-session-lock = callPackage ./nix/packages/gtk4-session-lock { };
     };
   in {
-    packages.${system}.default = pkgs.stdenv.mkDerivation {
-      name = pname;
-      meta.mainProgram = pname;
-      src = ./.;
-
-      nativeBuildInputs = with pkgs; [
-        wrapGAppsHook
-        gobject-introspection
-        glib 
-      ] ++ [agsPackage];
-
-      buildInputs = extraPackages ++ [pkgs.gjs];
-
-      installPhase = ''
-        runHook preInstall
-
-        mkdir -p $out/bin
-        mkdir -p $out/share
-        cp -r * $out/share
-        ags bundle ${entry} $out/bin/${pname} -d "SRC='$out/share'"
-
-        wrapProgram $out/bin/${pname} \
-          --prefix PATH : ${lib.makeBinPath extraPackages}
-
-        runHook postInstall
-      '';
+    packages.${system} = rec {
+      inherit (pkgs) stew-shell gtk4-session-lock;
+      default = pkgs.stew-shell;
     };
   };
 }
