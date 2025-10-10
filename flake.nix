@@ -42,6 +42,10 @@
       auth
       io
     ]);
+
+    agsPackage = ags.packages.${system}.default.override {
+      inherit extraPackages;
+    };
   in {
     packages.${system}.default = pkgs.stdenv.mkDerivation {
       name = pname;
@@ -51,9 +55,8 @@
       nativeBuildInputs = with pkgs; [
         wrapGAppsHook
         gobject-introspection
-        glib
-        ags.packages.${system}.default
-      ];
+        glib 
+      ] ++ [agsPackage];
 
       buildInputs = extraPackages ++ [pkgs.gjs];
 
@@ -67,17 +70,6 @@
 
         runHook postInstall
       '';
-    };
-
-    devShells.${system} = {
-      default = pkgs.mkShell {
-        buildInputs = [
-          pkgs.glib
-          (ags.packages.${system}.default.override {
-            inherit extraPackages;
-          })
-        ];
-      };
     };
   };
 }
