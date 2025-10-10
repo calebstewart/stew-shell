@@ -22,19 +22,19 @@
     libsoup_3
     glib
   ] ++ (with astal; [
-    astal.astal4
-    astal.battery
-    astal.powerprofiles
-    astal.hyprland
-    astal.network
-    astal.notifd
-    astal.apps
-    astal.bluetooth
-    astal.mpris
-    astal.wireplumber
-    astal.tray
-    astal.auth
-    astal.io
+    astal4
+    battery
+    powerprofiles
+    hyprland
+    network
+    notifd
+    apps
+    bluetooth
+    mpris
+    wireplumber
+    tray
+    auth
+    io
   ]);
 
   agsOverride = ags.override {
@@ -67,4 +67,8 @@ in stdenv.mkDerivation {
 
     runHook postInstall
   '';
+
+  meta = {
+    mainProgram = pname;
+  };
 }
