@@ -18,6 +18,7 @@
 
   outputs = {self, nixpkgs, ags, astal}:
   let
+    lib = nixpkgs.lib;
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
     pname = "stew-shell";
@@ -67,6 +68,9 @@
         mkdir -p $out/share
         cp -r * $out/share
         ags bundle ${entry} $out/bin/${pname} -d "SRC='$out/share'"
+
+        wrapProgram $out/bin/${pname} \
+          --prefix PATH : ${lib.makeBinPath extraPackages}
 
         runHook postInstall
       '';
