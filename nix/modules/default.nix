@@ -9,7 +9,7 @@ let
 in {
   options.stew-shell = {
     enable = lib.mkEnableOption "stew-shell";
-    package = lib.mkPackageOption newPkgs "stew-shell";
+    package = lib.mkPackageOption newPkgs "stew-shell" { };
   };
 
   config = lib.mkIf cfg.enable {
