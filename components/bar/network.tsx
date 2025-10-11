@@ -26,8 +26,9 @@ export function WiredStatus({ reveal }: {
 
             const ip4_config = createBinding(wired.device, "ip4_config")
             const ip4_address = ip4_config((cfg: NM.IPConfig) => {
-              if (cfg && cfg.addresses && cfg.addresses.length > 0) {
-                return cfg.addresses[0].address
+              const addresses = cfg.get_addresses()
+              if (addresses.length > 0) {
+                return addresses[0].get_address()
               } else {
                 return "No address"
               }
