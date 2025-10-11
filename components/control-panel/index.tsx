@@ -3,6 +3,7 @@ import { Accessor, For, createBinding, createState, createComputed } from "ags"
 import { createPoll } from "ags/time"
 
 import GLib from "gi://GLib"
+import GObject from "gi://GObject"
 import AstalBattery from "gi://AstalBattery"
 import AstalNetwork from "gi://AstalNetwork"
 import AstalBluetooth from "gi://AstalBluetooth"
@@ -21,6 +22,7 @@ function SystemControls({ }: {}) {
   const batteryIcon = createBinding(battery, "icon_name")
   const batteryPercentage = createBinding(battery, "percentage")
   const batteryState = createBinding(battery, "state")
+  const batteryPresent = createBinding(battery, "is_present")
   const batteryTooltip = createComputed([batteryPercentage, batteryState], (percentage, state) => (
     `${BatteryStateToLabel(state)} (${Math.round(percentage * 100)}%)`
   ))
@@ -33,6 +35,15 @@ function SystemControls({ }: {}) {
   const powerProfiles = AstalPowerProfiles.get_default()
   const [revealPower, setRevealPower] = createState(false)
 
+  const setupBluetooth = (self: Gtk.ToggleButton) => {
+    // Bidirectional binding of bluetooth adapter power
+    self.bind_property("active", bluetooth.adapter, "powered", GObject.BindingFlags.BIDIRECTIONAL)
+  }
+
+  const setupWifi = (self: Gtk.ToggleButton) => {
+    // Bidirectional binding with wifi status
+    self.bind_property("active", network.wifi, "enabled", GObject.BindingFlags.BIDIRECTIONAL)
+  }
 
   return <box class="system-controls" orientation={Gtk.Orientation.VERTICAL}>
     <centerbox class="toolbar">
@@ -41,7 +52,7 @@ function SystemControls({ }: {}) {
       </box>
       <box $type="center" />
       <box $type="end">
-        <button icon_name={batteryIcon} tooltip_text={batteryTooltip} />
+        <button icon_name={batteryIcon} tooltip_text={batteryTooltip} visible={batteryPresent} />
         <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" />
         <button icon_name="system-reboot-symbolic" tooltip_text="Reboot" />
         <button icon_name="system-shutdown-symbolic" tooltip_text="Shutdown" />
@@ -66,16 +77,16 @@ function SystemControls({ }: {}) {
           hexpand={true}
           vexpand={true}
           label="Wi-Fi"
-          active={createBinding(network.wifi, "enabled")}
-          onToggled={(b) => { network.wifi.enabled = b.active }} />
+          active={network.wifi.enabled}
+          $={setupWifi} />
       </Gtk.FlowBoxChild>
       <Gtk.FlowBoxChild>
         <togglebutton
           hexpand={true}
           vexpand={true}
           label="Bluetooth"
-          active={createBinding(bluetooth.adapter, "powered")}
-          onToggled={(b) => { bluetooth.adapter.powered = b.active }} />
+          active={bluetooth.adapter.powered}
+          $={setupBluetooth} />
       </Gtk.FlowBoxChild>
       <Gtk.FlowBoxChild>
         <togglebutton hexpand={true} vexpand={true} label="Do Not Disturb" />

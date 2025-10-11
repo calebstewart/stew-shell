@@ -23,7 +23,7 @@ export function Workspaces({ monitor, gdkmonitor, index }: {
             const label = id((id) => (id % 10).toString())
             const active = activeWorkspace((activeWorkspace) => activeWorkspace == workspace)
 
-            return <togglebutton active={active} onClicked={() => workspace.focus()} label={label} />
+            return <togglebutton class="flat" active={active} onClicked={() => workspace.focus()} label={label} />
           }}
         </For>
       </box>

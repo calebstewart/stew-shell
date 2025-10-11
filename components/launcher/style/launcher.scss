@@ -4,37 +4,11 @@
 @use "../../../style/gtk.scss" as *;
 
 .launcher {
-  > arrow {
-    background: transparent;
-  }
-
-  > contents {
-    background: transparent;
-    margin: 0;
-    padding: 0;
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    box-shadow: none;
-    border: none;
-  }
-
-  > contents > box {
-    background-color: $bg-color;
-    color: $fg-color;
-    border: 1pt solid $borders;
-    margin: 1rem;
-    border-radius: 5px;
-    padding: 0.8rem;
-  }
-
   entry.search {
     margin-bottom: 0.8rem;
   }
 
   button.app {
-    border: none;
     min-width: 0;
     min-height: 0;
     padding: 0.5rem;
@@ -59,60 +33,6 @@
 
     label {
       font-size: 1.2em;
-    }
-  }
-}
-
-window#ApplicationLauncher {
-  all: unset;
-
-  box.Launcher {
-    background-color: $bg-color;
-    color: $fg-color;
-    min-width: 600px;
-    box-shadow: 2px 3px 8px 0 gtkalpha(black, 0.4);
-    border: 1pt solid $borders;
-    margin: .5rem 1rem .5rem 1rem;
-    border-radius: 5px;
-    
-    padding: .8rem;
-
-    entry {
-      margin-bottom: .8rem;
-    }
-
-    button.App {
-      min-width: 0;
-      min-height: 0;
-      padding: .5rem;
-
-      icon {
-        font-size: 3em;
-        margin-right: .3rem;
-      }
-
-      label.name {
-        // font-weight: bold;
-        font-size: 1.1em
-      }
-
-      label.description {
-        color: gtkalpha($fg-color, .8);
-      }
-    }
-
-    box.not-found {
-      padding: 1rem;
-
-      icon {
-        font-size: 6em;
-        color: gtkalpha($fg-color, .7);
-      }
-
-      label {
-        color: gtkalpha($fg-color, .9);
-        font-size: 1.2em;
-      }
     }
   }
 }

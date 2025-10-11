@@ -59,29 +59,28 @@ function EndBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, mon
 
   const reveal = createComputed([popoverVisible, hover], (popover, hover) => (popover || hover))
 
-  const onDestroy = (button: Gtk.MenuButton) => {
+  const onDestroy = (button: Gtk.Box) => {
     button.remove_controller(motionController);
     motionControllerIDs.forEach((id) => motionController.disconnect(id));
   };
 
-  const onSetup = (button: Gtk.MenuButton) => {
+  const onSetup = (button: Gtk.Box) => {
     button.add_controller(motionController);
   };
 
-  return <box class="EndBlock" $type="end">
+  return <box class="EndBlock" $type="end" $={onSetup} onDestroy={onDestroy}>
+    <box>
+      <For each={trayItems}>
+        {(item) => <TrayItem reveal={reveal} item={item} setVisible={setPopoverVisible} />}
+      </For>
+    </box>
     <menubutton
       visible={true}
       always_show_arrow={false}
       direction={Gtk.ArrowType.NONE}
-      onDestroy={onDestroy}
-      $={onSetup}
+      class="flat"
     >
       <box class="IconContainer" orientation={Gtk.Orientation.HORIZONTAL}>
-        <box>
-          <For each={trayItems}>
-            {(item) => <TrayItem reveal={reveal} item={item} />}
-          </For>
-        </box>
         <VideoRecordingIndicator reveal={reveal} />
         <ListeningIndicator reveal={reveal} />
         <WiredStatus reveal={reveal} />

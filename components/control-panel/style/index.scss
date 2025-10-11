@@ -1,50 +1,21 @@
 @use "../../../style/gtk.scss" as *;
 
 .control-panel {
-  // min-width: 600px;
-
-  > contents {
-    background: gtkalpha(gtkshade($bg-color, 0.6), 0.5);
-    padding-left: 0;
-    padding-right: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  
-  > arrow {
-    background: transparent;
-  }
-
-  > contents > box {
-    background: transparent;
-
-    > * {
-      background-color: $bg-color;
-      margin-left: 0;
-      margin-right: 0;
-      margin-bottom: 0;
-      border-radius: 10px;
-    }
-
-    > *:not(:first-child) {
-      margin-top: 1rem;
-    }
-  }
-
   separator {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
   }
 
   .toolbar {
+    all: unset;
+
     .icon {
       margin-right: 0.3rem;
       font-size: 14pt;
     }
 
     .header {
-      font-weight: bold;
-      font-size: 14pt;
+      font-size: 12pt;
     }
 
     .subheader {

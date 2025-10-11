@@ -4,9 +4,6 @@
 @use "../../../style/colors.scss" as *;
 
 window.Bar {
-  background-color: $bg-color;
-  color: $fg-color;
-
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 
@@ -16,20 +13,7 @@ window.Bar {
   }
 
   box.Bar {
-    background-color: transparent;
-
     menubutton {
-      button.toggle {
-        color: $fg-color;
-        background: transparent;
-        box-shadow: none;
-      }
-
-      button.toggle:hover, button.toggle:checked {
-        color: lighter($fg-color);
-        background: darker($bg-color);
-      }
-
       box {
         padding-left: 0.25rem;
         padding-right: 0.25rem;
@@ -70,17 +54,4 @@ window.Bar {
 .icon {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
-}
-
-box.workspaces {
-  button.toggle {
-    color: $fg-color;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  button.toggle:hover, button.toggle:checked {
-    color: lighter($fg-color);
-    background: darker($bg-color);
-  }
 }

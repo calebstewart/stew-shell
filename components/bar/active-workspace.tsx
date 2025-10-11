@@ -28,7 +28,7 @@ export function ActiveWorkspace({ monitor, gdkmonitor, index }: {
                 {(client) => {
                   if (client === null) {
                     // Probably this is a new workspace, and there are no previous clients
-                    return <menubutton name="launcher-button">
+                    return <menubutton class="flat" name="launcher-button">
                       <box>
                         <image class="icon" icon_name="display" />
                         <label label="Desktop" />
