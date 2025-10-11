@@ -40,7 +40,7 @@ function StartBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<
 
 function CenterBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
   return <box class="CenterBlock" $type="center">
-    <Workspaces index={index} />
+    <Workspaces gdkmonitor={monitor} index={index} />
   </box>
 }
 

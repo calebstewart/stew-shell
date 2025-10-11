@@ -40,7 +40,7 @@ export function ActiveWorkspace({ gdkmonitor, index }: {
   const hyprland = Hyprland.get_default()
   const apps = Apps.Apps.new()
   const monitors = createBinding(hyprland, "monitors")
-  const monitor = createComputed([monitors, index], (monitors, index) => monitors[index])
+  const monitor = monitors((monitors) => monitors.find((monitor) => gdkmonitor.description.includes(monitor.description))!)
   const applications = createBinding(apps, "list")
   const iconTheme = Gtk.IconTheme.get_for_display(gdkmonitor.display)
   const setupButton = (button: Gtk.MenuButton) => { LauncherButton = button; }

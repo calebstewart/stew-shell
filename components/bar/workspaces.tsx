@@ -1,13 +1,14 @@
 import { createBinding, createComputed, For, Accessor, With } from "ags"
-import { Gtk } from "ags/gtk4"
+import { Gtk, Gdk } from "ags/gtk4"
 import Hyprland from "gi://AstalHyprland"
 
-export function Workspaces({ index }: {
+export function Workspaces({ gdkmonitor, index }: {
+  gdkmonitor: Gdk.Monitor,
   index: Accessor<number>,
 }) {
   const hyprland = Hyprland.get_default()
   const monitors = createBinding(hyprland, "monitors")
-  const monitor = createComputed([monitors, index], (monitors, index) => monitors[index])
+  const monitor = monitors((monitors) => monitors.find((monitor) => gdkmonitor.description.includes(monitor.description))!)
 
   return <With value={monitor}>
     {(monitor) => {
@@ -22,7 +23,7 @@ export function Workspaces({ index }: {
         <For each={workspaces}>
           {(workspace) => {
             const id = createBinding(workspace, "id")
-            const label = createComputed([id, index], (id, index) => (id - (index * 10)).toString())
+            const label = id((id) => (id % 10).toString())
             const active = activeWorkspace((activeWorkspace) => activeWorkspace == workspace)
 
             return <togglebutton active={active} onClicked={() => workspace.focus()} label={label} />
