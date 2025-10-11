@@ -3,35 +3,7 @@ import { Gtk, Gdk } from "ags/gtk4"
 import Hyprland from "gi://AstalHyprland"
 import Apps from "gi://AstalApps"
 
-import GObject from "gi://GObject"
-import { Launcher } from "@components/launcher"
-
-var LauncherButton: Gtk.MenuButton | null = null;
-
-export function ToggleLauncher() {
-  if (LauncherButton !== null) {
-    LauncherButton.activate()
-  }
-}
-
-export function find_child(name: string, parent: Gtk.Widget): Gtk.Widget | null {
-  if (!parent.visible) {
-    return null
-  }
-
-  for (var child = parent.get_first_child(); child !== null; child = child.get_next_sibling()) {
-    if (child.name === name && child.visible) {
-      return child
-    } else {
-      const result = find_child(name, child)
-      if (result !== null) {
-        return result
-      }
-    }
-  }
-
-  return null
-}
+import { LauncherPopover } from "@components/launcher"
 
 export function ActiveWorkspace({ gdkmonitor, index }: {
   gdkmonitor: Gdk.Monitor,
@@ -43,7 +15,6 @@ export function ActiveWorkspace({ gdkmonitor, index }: {
   const monitor = monitors((monitors) => monitors.find((monitor) => gdkmonitor.description.includes(monitor.description))!)
   const applications = createBinding(apps, "list")
   const iconTheme = Gtk.IconTheme.get_for_display(gdkmonitor.display)
-  const setupButton = (button: Gtk.MenuButton) => { LauncherButton = button; }
 
   return <With value={monitor}>
     {(monitor) => {
@@ -59,11 +30,12 @@ export function ActiveWorkspace({ gdkmonitor, index }: {
                 {(client) => {
                   if (client === null) {
                     // Probably this is a new workspace, and there are no previous clients
-                    return <menubutton name="launcher-button" popover={Launcher()} $={setupButton}>
+                    return <menubutton name="launcher-button">
                       <box>
                         <image class="icon" icon_name="display" />
                         <label label="Desktop" />
                       </box>
+                      <LauncherPopover monitor={monitor} />
                     </menubutton>
                   }
 
@@ -81,11 +53,12 @@ export function ActiveWorkspace({ gdkmonitor, index }: {
                     }
                   })
 
-                  return <menubutton name="launcher-button" popover={Launcher()} $={setupButton}>
+                  return <menubutton name="launcher-button">
                     <box>
                       <image class="icon" icon_name={icon} />
                       <label label={label} />
                     </box>
+                    <LauncherPopover monitor={monitor} />
                   </menubutton>
                 }}
               </With>

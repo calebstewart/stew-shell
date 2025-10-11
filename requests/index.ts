@@ -1,4 +1,4 @@
-import { ToggleLauncher } from "@components/bar"
+import { ToggleLauncher } from "@components/launcher"
 
 function toggleWindow(args: string[], response: (response: string) => void) {
   if (args.length !== 2) {

@@ -1,12 +1,32 @@
 import { For, createBinding, createState } from "ags"
-import { Gtk } from "ags/gtk4"
+import { Gtk, Gdk } from "ags/gtk4"
 import { interval } from "ags/time"
 
+import AstalHyprland from "gi://AstalHyprland"
 import AstalApps from "gi://AstalApps"
 import Gio from "gi://Gio?version=2.0"
 
+const LauncherForDisplay = new Map<AstalHyprland.Monitor, Gtk.Popover>();
+
 // Export a global instance of the application list
 export const Apps = AstalApps.Apps.new()
+
+export function ToggleLauncher() {
+  const monitor = AstalHyprland.get_default().focused_monitor;
+  var popover = LauncherForDisplay.get(monitor)
+
+  if (popover !== undefined) {
+    popover.popup()
+    return
+  }
+
+  const iterator = LauncherForDisplay.values().next()
+  if (iterator.done || iterator.value === undefined) {
+    return
+  } else {
+    iterator.value.popup()
+  }
+}
 
 // This will start the given application presuming it has a valid
 // desktop entry. It will start the application without using the
@@ -65,7 +85,7 @@ export function Application({ app, onActivate }: {
   </button>
 }
 
-export function Launcher(): Gtk.Popover {
+export function LauncherPopover({ monitor }: { monitor: AstalHyprland.Monitor }): Gtk.Popover {
   const [input, setInput] = createState("")
   const matchingApps = input((query) => Apps.fuzzy_query(query))
   const noMatchingApps = matchingApps((apps) => apps.length == 0)
@@ -87,7 +107,16 @@ export function Launcher(): Gtk.Popover {
     popover && popover.popdown()
   }
 
-  return <popover class="launcher" $={(self) => { popover = self; }}>
+  const setup = (self: Gtk.Popover) => {
+    popover = self;
+    LauncherForDisplay.set(monitor, self)
+  };
+
+  const destroy = (_: Gtk.Popover) => {
+    LauncherForDisplay.delete(monitor)
+  }
+
+  return <popover class="launcher" $={setup} onDestroy={destroy}>
     <box orientation={Gtk.Orientation.VERTICAL}>
       <Gtk.SearchEntry
         text={input}
