@@ -3,6 +3,7 @@ import { For, createBinding } from "ags"
 import { Astal, Gtk, Gdk } from "ags/gtk4"
 import { Accessor, createComputed, onCleanup, createState } from "ags"
 import Tray from "gi://AstalTray"
+import AstalHyprland from "gi://AstalHyprland"
 
 import { Workspaces } from "./workspaces"
 import { ActiveWorkspace } from "./active-workspace"
@@ -20,7 +21,7 @@ import TrayItem from "./tray"
 // import TrayItems from "./tray"
 import Battery from "./battery"
 
-import ControlPanel from "@components/control-panel"
+import ControlPanelPopover from "@components/control-panel"
 
 // export { default as BarItem } from "./item"
 // export { default as PrivacyIndicators } from "./privacy"
@@ -28,23 +29,22 @@ import ControlPanel from "@components/control-panel"
 // export { default as Bluetooth } from "./bluetooth"
 // export { default as Clock } from "./clock"
 // export { default as TrayItems } from "./tray"
-export { ToggleLauncher } from "./active-workspace"
 
 const Anchor = Astal.WindowAnchor
 
-function StartBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
+function StartBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, monitor: Accessor<AstalHyprland.Monitor>, index: Accessor<number> }) {
   return <box class="StartBlock" $type="start">
-    <ActiveWorkspace gdkmonitor={monitor} index={index} />
+    <ActiveWorkspace gdkmonitor={gdkmonitor} monitor={monitor} index={index} />
   </box>
 }
 
-function CenterBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
+function CenterBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, monitor: Accessor<AstalHyprland.Monitor>, index: Accessor<number> }) {
   return <box class="CenterBlock" $type="center">
-    <Workspaces gdkmonitor={monitor} index={index} />
+    <Workspaces gdkmonitor={gdkmonitor} monitor={monitor} index={index} />
   </box>
 }
 
-function EndBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
+function EndBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, monitor: Accessor<AstalHyprland.Monitor>, index: Accessor<number> }) {
   // All individual icons are revealed by one state variable. The reveal is automatically
   // set on-hover of the end block, and should remain open as long 
   const tray = Tray.get_default()
@@ -90,29 +90,30 @@ function EndBlock({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<nu
         <Battery reveal={reveal} />
         <Clock reveal={reveal} />
       </box>
-      <popover class="control-panel" onShow={() => setPopoverVisible(true)} onHide={() => setPopoverVisible(false)}>
-        <ControlPanel />
-      </popover>
+      <ControlPanelPopover monitor={monitor} setVisible={setPopoverVisible} />
     </menubutton >
   </box >
 }
 
-export function Bar({ monitor, index }: { monitor: Gdk.Monitor, index: Accessor<number> }) {
+export function Bar({ gdkmonitor, index }: { gdkmonitor: Gdk.Monitor, index: Accessor<number> }) {
   const name = createComputed((get) => `Bar${get(index)}`);
   const clazz = createComputed((get) => `Bar Monitor${get(index)}`);
+  const hyprland = AstalHyprland.get_default()
+  const monitors = createBinding(hyprland, "monitors")
+  const monitor = monitors((monitors) => monitors.find((monitor) => gdkmonitor.description.includes(monitor.description))!)
 
   return <window
     name={name}
     class={clazz}
-    gdkmonitor={monitor}
+    gdkmonitor={gdkmonitor}
     exclusivity={Astal.Exclusivity.EXCLUSIVE}
     anchor={Anchor.TOP | Anchor.LEFT | Anchor.RIGHT}
     $={(self) => onCleanup(() => self.destroy())}
     visible>
     <centerbox class="Bar" orientation={Gtk.Orientation.HORIZONTAL}>
-      <StartBlock monitor={monitor} index={index} />
-      <CenterBlock monitor={monitor} index={index} />
-      <EndBlock monitor={monitor} index={index} />
+      <StartBlock gdkmonitor={gdkmonitor} monitor={monitor} index={index} />
+      <CenterBlock gdkmonitor={gdkmonitor} monitor={monitor} index={index} />
+      <EndBlock gdkmonitor={gdkmonitor} monitor={monitor} index={index} />
     </centerbox>
   </window>
 }

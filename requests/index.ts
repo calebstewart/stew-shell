@@ -1,38 +1,30 @@
-import { ToggleLauncher } from "@components/launcher"
+import PopupCommand from "@requests/commands/popup"
+import { CommandInterface } from "@requests/command"
 
-function toggleWindow(args: string[], response: (response: string) => void) {
-  if (args.length !== 2) {
-    response(`usage: ${args[0]} [launcher|control-panel]`)
-    return
-  }
-
-  switch (args[1]) {
-    case "launcher":
-      ToggleLauncher()
-      response("")
-      break
-    case "control-panel":
-      response("error: not implemented yet")
-      break
-    default:
-      response(`error: unknown popup: ${args[1]}`)
-  }
-}
-
-const commandLibrary = new Map<string, (args: string[], response: (response: string) => void) => void>([
-  ["toggle", toggleWindow],
-])
+const CommandLibrary: Array<CommandInterface> = [
+  new PopupCommand(),
+];
 
 export default function HandleRequest(args: string[], response: (response: string) => void) {
   if (args.length === 0) {
-    response("error: no command provided")
+    response("error: no command provided (try 'help')")
   }
 
-  const command = commandLibrary.get(args[0])
-  if (command === undefined) {
-    response(`error: unknown command: ${args[0]}`)
+  if (args[0] === "help") {
+    const output = "Commands:\n" + CommandLibrary.map((cmd) => `  ${cmd.name}: ${cmd.help}`).join("\n")
+    response(output)
     return
   }
 
-  return command(args, response)
+  for (const command of CommandLibrary.values()) {
+    if (command.name === args[0]) {
+      if (command.argc !== args.length) {
+        response(`usage: ${args[0]} ${command.usage}`)
+        return
+      } else {
+        response(command.execute(args))
+        return
+      }
+    }
+  }
 }

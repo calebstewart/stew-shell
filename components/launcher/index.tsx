@@ -6,27 +6,12 @@ import AstalHyprland from "gi://AstalHyprland"
 import AstalApps from "gi://AstalApps"
 import Gio from "gi://Gio?version=2.0"
 
-const LauncherForDisplay = new Map<AstalHyprland.Monitor, Gtk.Popover>();
+import PopoverRegistry from "@components/popoverregistry"
+
+export const LauncherRegistry = new PopoverRegistry()
 
 // Export a global instance of the application list
 export const Apps = AstalApps.Apps.new()
-
-export function ToggleLauncher() {
-  const monitor = AstalHyprland.get_default().focused_monitor;
-  var popover = LauncherForDisplay.get(monitor)
-
-  if (popover !== undefined) {
-    popover.popup()
-    return
-  }
-
-  const iterator = LauncherForDisplay.values().next()
-  if (iterator.done || iterator.value === undefined) {
-    return
-  } else {
-    iterator.value.popup()
-  }
-}
 
 // This will start the given application presuming it has a valid
 // desktop entry. It will start the application without using the
@@ -89,8 +74,9 @@ export function LauncherPopover({ monitor }: { monitor: AstalHyprland.Monitor })
   const [input, setInput] = createState("")
   const matchingApps = input((query) => Apps.fuzzy_query(query))
   const noMatchingApps = matchingApps((apps) => apps.length == 0)
+  const setup = (self: Gtk.Popover) => LauncherRegistry.add(monitor, self)
+  const destroy = (self: Gtk.Popover) => LauncherRegistry.remove(self);
 
-  var popover: Gtk.Popover
   var searchEntry: Gtk.SearchEntry
 
   const activate = (_: Gtk.SearchEntry) => {
@@ -98,23 +84,15 @@ export function LauncherPopover({ monitor }: { monitor: AstalHyprland.Monitor })
     if (apps.length > 0) {
       launchApplication(apps[0])
       searchEntry.text = ""
-      popover.popdown()
+      LauncherRegistry.popdownFor(monitor)
     }
   }
 
   const stopSearch = () => {
     searchEntry && searchEntry.set_text("")
-    popover && popover.popdown()
+    LauncherRegistry.popdownFor(monitor)
   }
 
-  const setup = (self: Gtk.Popover) => {
-    popover = self;
-    LauncherForDisplay.set(monitor, self)
-  };
-
-  const destroy = (_: Gtk.Popover) => {
-    LauncherForDisplay.delete(monitor)
-  }
 
   return <popover class="launcher" $={setup} onDestroy={destroy}>
     <box orientation={Gtk.Orientation.VERTICAL}>

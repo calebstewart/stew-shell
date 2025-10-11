@@ -1,18 +1,15 @@
 import { createBinding, createComputed, For, Accessor, With } from "ags"
 import { Gtk, Gdk } from "ags/gtk4"
-import Hyprland from "gi://AstalHyprland"
+import AstalHyprland from "gi://AstalHyprland"
 
-export function Workspaces({ gdkmonitor, index }: {
+export function Workspaces({ monitor, gdkmonitor, index }: {
+  monitor: Accessor<AstalHyprland.Monitor>,
   gdkmonitor: Gdk.Monitor,
   index: Accessor<number>,
 }) {
-  const hyprland = Hyprland.get_default()
-  const monitors = createBinding(hyprland, "monitors")
-  const monitor = monitors((monitors) => monitors.find((monitor) => gdkmonitor.description.includes(monitor.description))!)
-
   return <With value={monitor}>
     {(monitor) => {
-      const workspaces = createBinding(hyprland, "workspaces")((workspaces) => {
+      const workspaces = createBinding(AstalHyprland.get_default(), "workspaces")((workspaces) => {
         return workspaces
           .filter((workspace) => workspace.monitor == monitor)
           .sort((a, b) => (a.id - b.id))

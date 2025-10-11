@@ -1,5 +1,5 @@
 import { Gtk } from "ags/gtk4"
-import { For, createBinding, createState, createComputed } from "ags"
+import { Accessor, For, createBinding, createState, createComputed } from "ags"
 import { createPoll } from "ags/time"
 
 import GLib from "gi://GLib"
@@ -8,9 +8,13 @@ import AstalNetwork from "gi://AstalNetwork"
 import AstalBluetooth from "gi://AstalBluetooth"
 import AstalPowerProfiles from "gi://AstalPowerProfiles"
 import AstalNotifd from "gi://AstalNotifd"
+import AstalHyprland from "gi://AstalHyprland"
 
 import { Notification } from "./notifd"
 import { BatteryStateToLabel } from "@components/bar/battery"
+import PopoverRegistry from "@components/popoverregistry"
+
+export const ControlPanelRegistry = new PopoverRegistry()
 
 function SystemControls({ }: {}) {
   const battery = AstalBattery.get_default()
@@ -83,21 +87,30 @@ function SystemControls({ }: {}) {
   </box >
 }
 
-export default function ControlPanel() {
+export default function ControlPanelPopover({ monitor, setVisible }: {
+  monitor: Accessor<AstalHyprland.Monitor>,
+  setVisible: (v: boolean) => void,
+}) {
   const notifd = AstalNotifd.get_default()
   const notifications = createBinding(notifd, "notifications")
   const hasNotifications = notifications((notifications) => notifications.length > 0)
+  const setup = (self: Gtk.Popover) => ControlPanelRegistry.add(monitor.get(), self)
+  const destroy = (self: Gtk.Popover) => ControlPanelRegistry.remove(self)
+  const show = (_: Gtk.Popover) => setVisible(true)
+  const hide = (_: Gtk.Popover) => setVisible(false)
 
-  return <box orientation={Gtk.Orientation.VERTICAL}>
-    <SystemControls />
-    <scrolledwindow propagate_natural_width={true} propagate_natural_height={true} visible={hasNotifications}>
-      <box orientation={Gtk.Orientation.VERTICAL}>
-        <For each={notifications}>
-          {(notification) => (
-            <Notification notification={notification} />
-          )}
-        </For>
-      </box>
-    </scrolledwindow>
-  </box>
+  return <popover class="control-panel" $={setup} onShow={show} onHide={hide} onDestroy={destroy}>
+    <box orientation={Gtk.Orientation.VERTICAL}>
+      <SystemControls />
+      <scrolledwindow propagate_natural_width={true} propagate_natural_height={true} visible={hasNotifications}>
+        <box orientation={Gtk.Orientation.VERTICAL}>
+          <For each={notifications}>
+            {(notification) => (
+              <Notification notification={notification} />
+            )}
+          </For>
+        </box>
+      </scrolledwindow>
+    </box>
+  </popover>
 }

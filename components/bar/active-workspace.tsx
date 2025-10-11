@@ -1,18 +1,16 @@
 import { createBinding, createComputed, Accessor, With } from "ags"
 import { Gtk, Gdk } from "ags/gtk4"
-import Hyprland from "gi://AstalHyprland"
+import AstalHyprland from "gi://AstalHyprland"
 import Apps from "gi://AstalApps"
 
 import { LauncherPopover } from "@components/launcher"
 
-export function ActiveWorkspace({ gdkmonitor, index }: {
+export function ActiveWorkspace({ monitor, gdkmonitor, index }: {
+  monitor: Accessor<AstalHyprland.Monitor>,
   gdkmonitor: Gdk.Monitor,
   index: Accessor<number>,
 }) {
-  const hyprland = Hyprland.get_default()
   const apps = Apps.Apps.new()
-  const monitors = createBinding(hyprland, "monitors")
-  const monitor = monitors((monitors) => monitors.find((monitor) => gdkmonitor.description.includes(monitor.description))!)
   const applications = createBinding(apps, "list")
   const iconTheme = Gtk.IconTheme.get_for_display(gdkmonitor.display)
 

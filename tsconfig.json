@@ -11,6 +11,12 @@
       "@components/*": [
         "./components/*"
       ],
+      "@requests": [
+        "./requests"
+      ],
+      "@requests/*": [
+        "./requests/*"
+      ],
       "@style": [
         "./style"
       ],

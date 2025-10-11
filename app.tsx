@@ -38,7 +38,7 @@ app.start({
     <For each={monitors}>
       {(monitor, index) => (
         <This this={app}>
-          <Bar monitor={monitor} index={index} />
+          <Bar gdkmonitor={monitor} index={index} />
         </This>
       )}
     </For>
