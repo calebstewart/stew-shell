@@ -22,6 +22,7 @@ in {
         Type = "simple";
         ExecStart = lib.getExe cfg.package;
         Restart = "on-failure";
+        Slice = "session.slice";
       };
 
       Install.WantedBy = ["hyprland-session.target"];
