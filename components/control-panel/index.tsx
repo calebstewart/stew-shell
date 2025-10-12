@@ -1,5 +1,5 @@
 import { Gtk } from "ags/gtk4"
-import { Accessor, For, createBinding, createState, createComputed } from "ags"
+import { Accessor, For, With, createBinding, createState, createComputed } from "ags"
 import { createPoll } from "ags/time"
 
 import GLib from "gi://GLib"
@@ -40,7 +40,7 @@ function SystemControls({ }: {}) {
     self.bind_property("active", bluetooth.adapter, "powered", GObject.BindingFlags.BIDIRECTIONAL)
   }
 
-  const setupWifi = (self: Gtk.ToggleButton) => {
+  const setupWifi = (self: Gtk.ToggleButton, wifi: AstalNetwork.Wifi) => {
     // Bidirectional binding with wifi status
     self.bind_property("active", network.wifi, "enabled", GObject.BindingFlags.BIDIRECTIONAL)
   }
@@ -72,14 +72,22 @@ function SystemControls({ }: {}) {
       max_children_per_line={4}
       valign={Gtk.Align.START}
       selection_mode={Gtk.SelectionMode.NONE}>
-      <Gtk.FlowBoxChild>
-        <togglebutton
-          hexpand={true}
-          vexpand={true}
-          label="Wi-Fi"
-          active={network.wifi.enabled}
-          $={setupWifi} />
-      </Gtk.FlowBoxChild>
+      <With value={createBinding(network, "wifi")}>
+        {(wifi: AstalNetwork.Wifi) => {
+          if (wifi === null) {
+            return null;
+          }
+
+          return <Gtk.FlowBoxChild>
+            <togglebutton
+              hexpand={true}
+              vexpand={true}
+              label="Wi-Fi"
+              active={network.wifi.enabled}
+              $={(self) => setupWifi(self, wifi)} />
+          </Gtk.FlowBoxChild>
+        }}
+      </With>
       <Gtk.FlowBoxChild>
         <togglebutton
           hexpand={true}
