@@ -1,0 +1,39 @@
+<node>
+  <interface name="org.freedesktop.login1.Manager">
+    <method name="LockSessions" />
+    <method name="LockSession">
+      <arg type="s" direction="in"/>
+    </method>
+    <method name="Suspend">
+      <arg type="b" direction="in"/>
+    </method>
+    <method name="CanSuspend">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="PowerOff">
+      <arg type="b" direction="in"/>
+    </method>
+    <method name="CanPowerOff">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="Reboot">
+      <arg type="b" direction="in"/>
+    </method>
+    <method name="CanReboot">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="HybridSleep">
+      <arg type="b" direction="in"/>
+    </method>
+    <method name="CanHybridSleep">
+      <arg type="s" direction="out"/>
+    </method>
+    <method name="ListSessions">
+      <arg name="sessions" type="a(susso)" direction="out"/>
+    </method>
+    <method name="GetSessionByPID">
+      <arg name="pid" type="u" direction="in" />
+      <arg name="object_path" type="o" direction="out" />
+    </method>
+  </interface>
+</node>

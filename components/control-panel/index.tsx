@@ -3,6 +3,7 @@ import { Accessor, For, With, createBinding, createState, createComputed } from 
 import { createPoll } from "ags/time"
 
 import GLib from "gi://GLib"
+import Gio from "gi://Gio"
 import GObject from "gi://GObject"
 import AstalBattery from "gi://AstalBattery"
 import AstalNetwork from "gi://AstalNetwork"
@@ -14,6 +15,9 @@ import AstalHyprland from "gi://AstalHyprland"
 import { Notification } from "./notifd"
 import { BatteryStateToLabel } from "@components/bar/battery"
 import PopoverRegistry from "@components/popoverregistry"
+
+import ScreenSaver from "@lib/org/freedesktop/ScreenSaver"
+import { Manager as LoginManager, get_active_session } from "@lib/org/freedesktop/login1"
 
 export const ControlPanelRegistry = new PopoverRegistry()
 
@@ -34,6 +38,20 @@ function SystemControls({ }: {}) {
   const bluetooth = AstalBluetooth.get_default()
   const powerProfiles = AstalPowerProfiles.get_default()
   const [revealPower, setRevealPower] = createState(false)
+  const session = get_active_session()
+  var inhibitCookie: number | null = null
+
+  const inhibitToggle = (self: Gtk.ToggleButton) => {
+    if (self.active && inhibitCookie === null) {
+      return
+    }
+
+    if (!self.active) {
+      inhibitCookie = ScreenSaver.InhibitSync("stew-shell", "User requested")
+    } else {
+      ScreenSaver.UnInhibitSync(inhibitCookie)
+    }
+  }
 
   const setupBluetooth = (self: Gtk.ToggleButton) => {
     // Bidirectional binding of bluetooth adapter power
@@ -53,9 +71,9 @@ function SystemControls({ }: {}) {
       <box $type="center" />
       <box $type="end">
         <button icon_name={batteryIcon} tooltip_text={batteryTooltip} visible={batteryPresent} />
-        <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" />
-        <button icon_name="system-reboot-symbolic" tooltip_text="Reboot" />
-        <button icon_name="system-shutdown-symbolic" tooltip_text="Shutdown" />
+        <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" onClicked={() => LoginManager.LockSessionSync(session.Id)} />
+        <button icon_name="system-reboot-symbolic" tooltip_text="Reboot" onClicked={() => LoginManager.RebootSync(true)} />
+        <button icon_name="system-shutdown-symbolic" tooltip_text="Shutdown" onClicked={() => LoginManager.PowerOffSync(true)} />
       </box>
     </centerbox >
     <revealer reveal_child={revealPower} transition_type={Gtk.RevealerTransitionType.SLIDE_DOWN}>
@@ -100,7 +118,7 @@ function SystemControls({ }: {}) {
         <togglebutton hexpand={true} vexpand={true} label="Do Not Disturb" />
       </Gtk.FlowBoxChild>
       <Gtk.FlowBoxChild>
-        <togglebutton hexpand={true} vexpand={true} label="Auto-Lock" />
+        <togglebutton hexpand={true} vexpand={true} label="Auto-Lock" active={true} onNotifyActive={inhibitToggle} />
       </Gtk.FlowBoxChild>
     </Gtk.FlowBox>
   </box >
