@@ -38,7 +38,6 @@ function SystemControls({ }: {}) {
   const bluetooth = AstalBluetooth.get_default()
   const powerProfiles = AstalPowerProfiles.get_default()
   const [revealPower, setRevealPower] = createState(false)
-  const session = get_active_session()
   var inhibitCookie: number | null = null
 
   const inhibitToggle = (self: Gtk.ToggleButton) => {
@@ -63,6 +62,13 @@ function SystemControls({ }: {}) {
     self.bind_property("active", network.wifi, "enabled", GObject.BindingFlags.BIDIRECTIONAL)
   }
 
+  // We attempt to lock all sessions matching our username and which have a seat assigned
+  const credentials = new Gio.Credentials()
+  const sessions = LoginManager.ListSessionsSync()[0]
+    .filter((s: any) => s[3] !== "" && s[1] == credentials.get_unix_user())
+    .map((s: any): string => s[0])
+  const lockSessions = () => sessions.forEach((sid: string) => LoginManager.LockSessionSync(sid))
+
   return <box class="system-controls" orientation={Gtk.Orientation.VERTICAL}>
     <centerbox class="toolbar">
       <box $type="start">
@@ -71,7 +77,7 @@ function SystemControls({ }: {}) {
       <box $type="center" />
       <box $type="end">
         <button icon_name={batteryIcon} tooltip_text={batteryTooltip} visible={batteryPresent} />
-        <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" onClicked={() => LoginManager.LockSessionSync(session.Id)} />
+        <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" onClicked={lockSessions} />
         <button icon_name="system-reboot-symbolic" tooltip_text="Reboot" onClicked={() => LoginManager.RebootSync(true)} />
         <button icon_name="system-shutdown-symbolic" tooltip_text="Shutdown" onClicked={() => LoginManager.PowerOffSync(true)} />
       </box>
