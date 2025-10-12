@@ -2,10 +2,10 @@ import { readFile } from "ags/file"
 
 import Gio from "gi://Gio?version=2.0"
 
-export const ManagerProxy = Gio.DBusProxy.makeProxyWrapper(readFile("data/dbus/org.freedesktop.login1.Manager.xml"))
+export const ManagerProxy = Gio.DBusProxy.makeProxyWrapper(readFile(`${SRC}/data/dbus/org.freedesktop.login1.Manager.xml`))
 export const Manager = ManagerProxy(Gio.DBus.system, "org.freedesktop.login1", "/org/freedesktop/login1")
 
-export const SessionProxy = Gio.DBusProxy.makeProxyWrapper(readFile("data/dbus/org.freedesktop.login1.Session.xml"))
+export const SessionProxy = Gio.DBusProxy.makeProxyWrapper(readFile(`${SRC}/data/dbus/org.freedesktop.login1.Session.xml`))
 
 export function get_active_session(): Gio.DBusProxy {
   const credentials = new Gio.Credentials()
