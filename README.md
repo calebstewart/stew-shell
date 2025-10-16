@@ -63,3 +63,6 @@ $ stew-shell popup control-panel
 ```
 
 <img width="635" height="445" alt="image" src="https://github.com/user-attachments/assets/6627d8d5-3870-4a0d-85b9-f7cecca70c73" />
+
+[GJS]: https://gjs.guide/
+[AGS]: https://aylur.github.io/ags/
