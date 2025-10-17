@@ -21,7 +21,7 @@ in {
       Service = {
         Type = "simple";
         ExecStart = lib.getExe cfg.package;
-        Restart = "on-failure";
+        Restart = "always";
         Slice = "session.slice";
       };
 
