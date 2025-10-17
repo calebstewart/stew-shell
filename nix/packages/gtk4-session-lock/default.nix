@@ -11,11 +11,13 @@
   rustPlatform,
   fetchFromGitHub,
   libadwaita,
-}: let
-in rustPlatform.buildRustPackage {
+}:
+let
+in
+rustPlatform.buildRustPackage {
   pname = "gtk4-session-lock";
   version = "0.1.0";
-  cargoPatches = [./0001-Add-Cargo.lock.patch];
+  cargoPatches = [ ./0001-Add-Cargo.lock.patch ];
   cargoHash = "sha256-KZSxuDSstz7PF3MolrLcx9wcxMpcHie9Q3i5WtI2WOc=";
   doCheck = false;
 
@@ -26,7 +28,10 @@ in rustPlatform.buildRustPackage {
     hash = "sha256-bDY3x82aPFYfBbtESTeAu0GiR8hkXEiooC/xRh5N3e8=";
   };
 
-  nativeBuildInputs = [pkg-config gtk4];
+  nativeBuildInputs = [
+    pkg-config
+    gtk4
+  ];
 
   buildInputs = [
     glib

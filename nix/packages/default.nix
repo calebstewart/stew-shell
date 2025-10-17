@@ -11,7 +11,8 @@
   ags,
   stdenv,
   lib,
-}: let
+}:
+let
   pname = "stew-shell";
   entry = "app.tsx";
 
@@ -21,7 +22,8 @@
     libadwaita
     libsoup_3
     glib
-  ] ++ (with astal; [
+  ]
+  ++ (with astal; [
     astal4
     battery
     powerprofiles
@@ -40,7 +42,8 @@
   agsOverride = ags.override {
     inherit extraPackages;
   };
-in stdenv.mkDerivation {
+in
+stdenv.mkDerivation {
   name = pname;
   version = "0.1.0";
   src = ./../..;
@@ -52,7 +55,7 @@ in stdenv.mkDerivation {
     agsOverride
   ];
 
-  buildInputs = [gjs] ++ extraPackages;
+  buildInputs = [ gjs ] ++ extraPackages;
 
   installPhase = ''
     runHook preInstall

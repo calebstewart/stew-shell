@@ -1,12 +1,19 @@
-{stew-shell, ...}:
-{lib, config, pkgs, ...}:
+{ stew-shell, ... }:
+{
+  lib,
+  config,
+  pkgs,
+  ...
+}:
 let
   cfg = config.stew-shell;
 
   newPkgs = {
     stew-shell = stew-shell.packages.${pkgs.system}.default;
-  } // pkgs;
-in {
+  }
+  // pkgs;
+in
+{
   options.stew-shell = {
     enable = lib.mkEnableOption "stew-shell";
     package = lib.mkPackageOption newPkgs "stew-shell" { };
@@ -25,7 +32,7 @@ in {
         Slice = "session.slice";
       };
 
-      Install.WantedBy = ["hyprland-session.target"];
+      Install.WantedBy = [ "hyprland-session.target" ];
     };
   };
 }
