@@ -44,7 +44,7 @@ export function ListeningIndicator({ reveal }: {
     }
   })
 
-  const classes = muted((muted) => muted ? "PrivacyIndicator muted" : "PrivacyIndicator unmuted")
+  const classes = muted((muted) => muted ? "tray-item privacy muted" : "tray-item privacy unmuted")
 
   return <revealer reveal_child={hasRecorders} transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT} onDestroy={unsubRecorders}>
     <box class={classes}>
@@ -93,7 +93,7 @@ export function VideoRecordingIndicator({ reveal }: {
     }
   })
 
-  const classes = "PrivacyIndicator unmuted"
+  const classes = "tray-item privacy muted"
 
   return <revealer reveal_child={hasRecorders} transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT} onDestroy={unsubRecorders}>
     <box class={classes}>

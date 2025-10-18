@@ -13,7 +13,7 @@ export default function Clock({ reveal }: {
   const time = datetime((v: GLib.DateTime) => v.format("%R")!)
 
   return (
-    <box>
+    <box class="tray-item">
       <label label={time} />
     </box >
   )

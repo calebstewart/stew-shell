@@ -17,7 +17,7 @@ export function WiredStatus({ reveal }: {
 
       const iconName = createBinding(wired, "icon_name")
 
-      return <box>
+      return <box class="tray-item">
         <With value={createBinding(wired, "device")}>
           {(device: NM.DeviceEthernet) => {
             if (device === null) {
@@ -71,7 +71,7 @@ export function WirelessStatus({ reveal }: {
         }
       })
 
-      return (<box visible={wifi !== null}>
+      return (<box class="tray-item" visible={wifi !== null}>
         <image class="icon" icon_name={createBinding(wifi, "icon_name")} />
         <revealer
           reveal_child={reveal}

@@ -34,7 +34,7 @@ export default function Battery({ reveal }: {
   const tooltip = state((state) => BatteryStateToLabel(state))
 
   return (
-    <box visible={createBinding(battery, "is_present")} tooltip_text={tooltip}>
+    <box class="tray-item" visible={createBinding(battery, "is_present")} tooltip_text={tooltip}>
       <image class="icon" icon_name={icon} />
       <revealer
         transition_type={Gtk.RevealerTransitionType.SLIDE_LEFT}

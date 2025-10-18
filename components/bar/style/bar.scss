@@ -4,22 +4,59 @@
 @use "../../../style/colors.scss" as *;
 
 window.Bar {
+  background: gtkalpha($bg-color, 1.0);
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 
-  > * {
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
-  }
+  box.end {
+    padding: 0;
+    margin: 0;
 
-  box.Bar {
-    menubutton {
-      box {
-        padding-left: 0.25rem;
-        padding-right: 0.25rem;
+    box.system-tray {
+      .tray-item {
+        padding-right: 0.5rem;
+      }
+
+      .privacy.unmuted {
+        animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
+
+        @keyframes unmuted-flash {
+          0% { background-color: $error; }
+          100% { background-color: $bg-color; }
+        }
+      }
+
+      .privacy.muted {
+        animation: muted-flash 2s ease-in-out 0s infinite alternate;
+
+        @keyframes muted-flash {
+          0% { background-color: gtkshade($fg-color, 1.5); color: gtkshade($bg-color, 0.67); }
+          100% { background-color: $bg-color; color: $fg-color; }
+        }
+      }
+    }
+
+    box.application-tray {
+      padding: 0;
+      margin: 0;
+
+      > menubutton.tray-item:not(:first-child) > button {
+        padding: 0 0.5rem 0 0;
+      }
+
+      > menubutton.tray-item:first-child > button {
+        padding: 0 0.5rem 0 0.5rem;
+      }
+    }
+
+    menubutton.control-panel {
+      > button {
+        margin: 0;
+        padding: 0 0 0 0.25rem;
       }
     }
   }
+
 
   box.active_workspace {
     label {
@@ -30,24 +67,6 @@ window.Bar {
       font-size: 16pt;
       margin-right: 4pt;
     }
-  }
-}
-
-.PrivacyIndicator.unmuted {
-  animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
-
-  @keyframes unmuted-flash {
-    0% { background-color: $error; }
-    100% { background-color: $bg-color; }
-  }
-}
-
-.PrivacyIndicator.muted {
-  animation: muted-flash 2s ease-in-out 0s infinite alternate;
-
-  @keyframes muted-flash {
-    0% { background-color: gtkshade($fg-color, 1.5); color: gtkshade($bg-color, 0.67); }
-    100% { background-color: $bg-color; color: $fg-color; }
   }
 }
 

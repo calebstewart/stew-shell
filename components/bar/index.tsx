@@ -45,42 +45,23 @@ function CenterBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, 
 }
 
 function EndBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, monitor: Accessor<AstalHyprland.Monitor>, index: Accessor<number> }) {
-  // All individual icons are revealed by one state variable. The reveal is automatically
-  // set on-hover of the end block, and should remain open as long 
   const tray = Tray.get_default()
   const trayItems = createBinding(tray, "items")
-  const [hover, setHover] = createState(false);
-  const motionController = new Gtk.EventControllerMotion();
-  const motionControllerIDs = [
-    motionController.connect("enter", () => setHover(true)),
-    motionController.connect("leave", () => setHover(false)),
-  ];
-  var [popoverVisible, setPopoverVisible] = createState(false);
+  var [reveal, setReveal] = createState(false);
 
-  const reveal = createComputed([popoverVisible, hover], (popover, hover) => (popover || hover))
-
-  const onDestroy = (button: Gtk.Box) => {
-    button.remove_controller(motionController);
-    motionControllerIDs.forEach((id) => motionController.disconnect(id));
-  };
-
-  const onSetup = (button: Gtk.Box) => {
-    button.add_controller(motionController);
-  };
-
-  return <box class="EndBlock" $type="end" $={onSetup} onDestroy={onDestroy}>
-    <box>
+  return <box class="end" $type="end">
+    <box class="application-tray">
       <For each={trayItems}>
-        {(item) => <TrayItem reveal={reveal} item={item} setVisible={setPopoverVisible} />}
+        {(item) => <TrayItem item={item} />}
       </For>
     </box>
     <menubutton
       visible={true}
       always_show_arrow={false}
       direction={Gtk.ArrowType.NONE}
-      class="flat"
+      class="control-panel flat"
     >
-      <box class="IconContainer" orientation={Gtk.Orientation.HORIZONTAL}>
+      <box class="system-tray" orientation={Gtk.Orientation.HORIZONTAL}>
         <VideoRecordingIndicator reveal={reveal} />
         <ListeningIndicator reveal={reveal} />
         <WiredStatus reveal={reveal} />
@@ -89,7 +70,7 @@ function EndBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, mon
         <Battery reveal={reveal} />
         <Clock reveal={reveal} />
       </box>
-      <ControlPanelPopover monitor={monitor} setVisible={setPopoverVisible} />
+      <ControlPanelPopover monitor={monitor} setVisible={setReveal} />
     </menubutton >
   </box >
 }

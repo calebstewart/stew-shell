@@ -41,7 +41,7 @@ export default function BluetoothStatus({ reveal }: {
 
   updateDetails(bluetooth.devices)
 
-  return <box onDestroy={() => devicesUnsub()}>
+  return <box class="tray-item" onDestroy={() => devicesUnsub()}>
     <image class="icon" icon_name={icon} />
     <revealer
       reveal_child={reveal}
