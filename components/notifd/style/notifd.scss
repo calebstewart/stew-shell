@@ -8,6 +8,12 @@ window.notification-center {
     border: 2px solid $borders;
     margin: 1em;
     padding: 0.5rem;
+    opacity: 0.8;
+
+    &:hover {
+      opacity: 1.0;
+      transition: opacity 100ms linear;
+    }
 
     .toolbar {
       all: unset;
@@ -32,10 +38,6 @@ window.notification-center {
       }
     }
 
-    &:hover {
-      background: lighter($bg-color);
-      transition: background-color 100ms linear;
-    }
 
     .content {
       box.image {
