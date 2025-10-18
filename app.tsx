@@ -6,6 +6,7 @@ import app from "ags/gtk4/app";
 import { For, This, createBinding } from "ags";
 
 import { Bar } from "@components/bar";
+import { NotificationCenter } from "@components/notifd";
 import style from "./style/main.scss";
 import HandleRequest from "./requests";
 
@@ -39,6 +40,7 @@ app.start({
       {(monitor, index) => (
         <This this={app}>
           <Bar gdkmonitor={monitor} index={index} />
+          <NotificationCenter gdkmonitor={monitor} index={index} />
         </This>
       )}
     </For>

@@ -1,40 +1,41 @@
 @use "../../../style/gtk.scss" as *;
 
-popover.control-panel {
-  separator {
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .toolbar {
-    all: unset;
-
-    .icon {
-      margin-right: 0.3rem;
-      font-size: 14pt;
-    }
-
-    .header {
-      font-size: 12pt;
-    }
-
-    .subheader {
-      font-weight: lighter;
-      font-size: 10pt;
-    }
-
-    button {
-      margin-left: 0.25rem;
-      margin-right: 0.25rem;
-    }
-  }
-
-  .system-controls {
-    padding: 0.5rem;
-  }
+window.notification-center {
 
   .notification {
+    background: $bg-color;
+    border-radius: 10px;
+    border: 2px solid $borders;
+    margin: 1em;
     padding: 0.5rem;
+
+    .toolbar {
+      all: unset;
+
+      .icon {
+        margin-right: 0.3rem;
+        font-size: 14pt;
+      }
+
+      .header {
+        font-size: 12pt;
+      }
+
+      .subheader {
+        font-weight: lighter;
+        font-size: 10pt;
+      }
+
+      button {
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
+      }
+    }
+
+    &:hover {
+      background: lighter($bg-color);
+      transition: background-color 100ms linear;
+    }
 
     .content {
       box.image {

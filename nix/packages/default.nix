@@ -7,6 +7,7 @@
   gtk4-layer-shell,
   libadwaita,
   libsoup_3,
+  gsound,
   astal,
   ags,
   stdenv,
@@ -19,6 +20,7 @@ let
   extraPackages = [
     gtk4-session-lock
     gtk4-layer-shell
+    gsound
     libadwaita
     libsoup_3
     glib

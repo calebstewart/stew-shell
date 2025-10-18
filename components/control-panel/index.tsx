@@ -12,7 +12,7 @@ import AstalPowerProfiles from "gi://AstalPowerProfiles"
 import AstalNotifd from "gi://AstalNotifd"
 import AstalHyprland from "gi://AstalHyprland"
 
-import { Notification } from "./notifd"
+import { Notification } from "@components/notifd"
 import { BatteryStateToLabel } from "@components/bar/battery"
 import PopoverRegistry from "@components/popoverregistry"
 
@@ -21,7 +21,9 @@ import { Manager as LoginManager, get_active_session } from "@lib/org/freedeskto
 
 export const ControlPanelRegistry = new PopoverRegistry()
 
-function SystemControls({ }: {}) {
+function SystemControls({ notifd }: {
+  notifd: AstalNotifd.Notifd,
+}) {
   const battery = AstalBattery.get_default()
   const batteryIcon = createBinding(battery, "icon_name")
   const batteryPercentage = createBinding(battery, "percentage")
@@ -60,6 +62,10 @@ function SystemControls({ }: {}) {
   const setupWifi = (self: Gtk.ToggleButton, wifi: AstalNetwork.Wifi) => {
     // Bidirectional binding with wifi status
     self.bind_property("active", network.wifi, "enabled", GObject.BindingFlags.BIDIRECTIONAL)
+  }
+
+  const setupDoNotDisturb = (self: Gtk.ToggleButton) => {
+    self.bind_property("active", notifd, "dont_disturb", GObject.BindingFlags.BIDIRECTIONAL)
   }
 
   // We attempt to lock all sessions matching our username and which have a seat assigned
@@ -121,7 +127,12 @@ function SystemControls({ }: {}) {
           $={setupBluetooth} />
       </Gtk.FlowBoxChild>
       <Gtk.FlowBoxChild>
-        <togglebutton hexpand={true} vexpand={true} label="Do Not Disturb" />
+        <togglebutton
+          hexpand={true}
+          vexpand={true}
+          label="Do Not Disturb"
+          active={notifd.dont_disturb}
+          $={setupDoNotDisturb} />
       </Gtk.FlowBoxChild>
       <Gtk.FlowBoxChild>
         <togglebutton hexpand={true} vexpand={true} label="Auto-Lock" active={true} onNotifyActive={inhibitToggle} />
@@ -144,7 +155,7 @@ export default function ControlPanelPopover({ monitor, setVisible }: {
 
   return <popover class="control-panel" $={setup} onShow={show} onHide={hide} onDestroy={destroy}>
     <box orientation={Gtk.Orientation.VERTICAL}>
-      <SystemControls />
+      <SystemControls notifd={notifd} />
       <scrolledwindow propagate_natural_width={true} propagate_natural_height={true} visible={hasNotifications}>
         <box orientation={Gtk.Orientation.VERTICAL}>
           <For each={notifications}>

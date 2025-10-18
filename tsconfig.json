@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": false,
     "jsx": "react-jsx",
     "jsxImportSource": "ags/gtk4",
-    "module": "ES2020",
+    "module": "ES2022",
     "moduleResolution": "Bundler",
-    "experimentalDecorators": false,
     "paths": {
       "@components": [
         "./components"
@@ -12,17 +12,17 @@
       "@components/*": [
         "./components/*"
       ],
-      "@requests": [
-        "./requests"
-      ],
-      "@requests/*": [
-        "./requests/*"
-      ],
       "@lib": [
         "./lib"
       ],
       "@lib/*": [
         "./lib/*"
+      ],
+      "@requests": [
+        "./requests"
+      ],
+      "@requests/*": [
+        "./requests/*"
       ],
       "@style": [
         "./style"
