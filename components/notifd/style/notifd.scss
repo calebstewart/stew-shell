@@ -3,7 +3,7 @@
 window.notification-center {
 
   .notification {
-    background: $bg-color;
+    background: darker($bg-color);
     border-radius: 10px;
     border: 2px solid $borders;
     margin: 1em;

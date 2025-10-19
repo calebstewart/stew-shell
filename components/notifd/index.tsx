@@ -5,6 +5,7 @@ import Gio from "gi://Gio?version=2.0"
 import GLib from "gi://GLib?version=2.0"
 import GSound from "gi://GSound?version=1.0"
 import AstalNotifd from "gi://AstalNotifd"
+import Pango from "gi://Pango?version=1.0"
 
 const [DoNotDisturb, SetDoNotDisturb] = createState(false)
 
@@ -88,6 +89,7 @@ export function Notification({ notification }: {
 
   const onClick = () => {
     if (notification.actions.length === 0) {
+      notification.dismiss()
       return
     }
 
@@ -111,13 +113,14 @@ export function Notification({ notification }: {
     self.remove_controller(gesture)
   }
 
-  return <box class="notification" orientation={Gtk.Orientation.VERTICAL} hexpand={true} vexpand={false} onDestroy={destroy} $={setup}>
+  return <box class="notification" orientation={Gtk.Orientation.VERTICAL} vexpand={false} onDestroy={destroy} $={setup}>
     <centerbox class="toolbar">
       <box $type="start" orientation={Gtk.Orientation.HORIZONTAL}>
-        <image class="icon" icon_name={icon} visible={Boolean(icon)} valign={Gtk.Align.CENTER} />
-        <label class="header" label={notification.summary} halign={Gtk.Align.START} valign={Gtk.Align.CENTER} />
-        <label class="subheader" label={` from ${appName}`} valign={Gtk.Align.CENTER} />
+        <image class="icon" icon_name={icon} visible={Boolean(icon)} />
+        <label class="header" label={notification.summary} />
+        <label class="subheader" label={` from ${appName}`} />
       </box>
+      <box $type="center" />
       <box $type="end" orientation={Gtk.Orientation.HORIZONTAL}>
         <label class="time" label={time.format("%R")!} />
         <button
@@ -135,7 +138,11 @@ export function Notification({ notification }: {
           label={notification.body}
           visible={Boolean(notification.body)}
           halign={Gtk.Align.START}
-          xalign={0} />
+          xalign={0}
+          width_chars={5}
+          max_width_chars={100}
+          wrap_mode={Pango.WrapMode.WORD_CHAR}
+          wrap={true} />
       </box>
     </box>
     <box class="actions" visible={hasNonDefaultActions}>
