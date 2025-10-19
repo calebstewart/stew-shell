@@ -20,6 +20,7 @@ import ScreenSaver from "@lib/org/freedesktop/ScreenSaver"
 import { Manager as LoginManager, get_active_session } from "@lib/org/freedesktop/login1"
 
 export const ControlPanelRegistry = new PopoverRegistry()
+export const [ControlPanelRevealed, SetControlPanelRevealed] = createState(false)
 
 function SystemControls({ notifd }: {
   notifd: AstalNotifd.Notifd,
@@ -81,7 +82,7 @@ function SystemControls({ notifd }: {
         <label class="header" label={date} />
       </box>
       <box $type="center" />
-      <box $type="end">
+      <box class="linked" $type="end">
         <button icon_name={batteryIcon} tooltip_text={batteryTooltip} visible={batteryPresent} />
         <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" onClicked={lockSessions} />
         <button icon_name="system-reboot-symbolic" tooltip_text="Reboot" onClicked={() => LoginManager.RebootSync(true)} />
@@ -141,17 +142,18 @@ function SystemControls({ notifd }: {
   </box >
 }
 
-export default function ControlPanelPopover({ monitor, setVisible }: {
+export function ControlPanelPopover({ monitor }: {
   monitor: Accessor<AstalHyprland.Monitor>,
-  setVisible: (v: boolean) => void,
 }) {
   const notifd = AstalNotifd.get_default()
-  const notifications = createBinding(notifd, "notifications")
+  const notifications = createBinding(notifd, "notifications")((notifications) => (
+    notifications.sort((a, b) => b.time - a.time)
+  ))
   const hasNotifications = notifications((notifications) => notifications.length > 0)
   const setup = (self: Gtk.Popover) => ControlPanelRegistry.add(monitor.get(), self)
   const destroy = (self: Gtk.Popover) => ControlPanelRegistry.remove(self)
-  const show = (_: Gtk.Popover) => setVisible(true)
-  const hide = (_: Gtk.Popover) => setVisible(false)
+  const show = (_: Gtk.Popover) => SetControlPanelRevealed(true)
+  const hide = (_: Gtk.Popover) => SetControlPanelRevealed(false)
 
   return <popover class="control-panel" $={setup} onShow={show} onHide={hide} onDestroy={destroy}>
     <box orientation={Gtk.Orientation.VERTICAL}>

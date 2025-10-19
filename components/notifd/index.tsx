@@ -7,6 +7,8 @@ import GSound from "gi://GSound?version=1.0"
 import AstalNotifd from "gi://AstalNotifd"
 import Pango from "gi://Pango?version=1.0"
 
+import { ControlPanelRevealed } from "@components/control-panel"
+
 const [DoNotDisturb, SetDoNotDisturb] = createState(false)
 
 // Resolve the Gio.DesktopAppInfo for the given notification object. This function
@@ -129,7 +131,6 @@ export function Notification({ notification }: {
           onClicked={() => notification.dismiss()} />
       </box>
     </centerbox>
-    <Gtk.Separator visible={true} />
     <box class="content">
       <NotificationImage image={notification.image} />
       <box orientation={Gtk.Orientation.VERTICAL}>
@@ -160,11 +161,16 @@ export function NotificationCenter({ gdkmonitor }: {
   index: Accessor<number>,
 }) {
   const notifd = AstalNotifd.get_default()
-  const notifications = createBinding(notifd, "notifications")
+  const notifications = createBinding(notifd, "notifications")((notifications) => (
+    notifications.sort((a, b) => b.time - a.time)
+  ))
   const hasNotifications = notifications((v) => v.length > 0)
   const sound = new GSound.Context()
   const dontDisturb = createBinding(notifd, "dont_disturb")
-  const visible = createComputed([hasNotifications, dontDisturb], (hasNotifications, dontDisturb) => hasNotifications && !dontDisturb)
+  const visible = createComputed(
+    [hasNotifications, dontDisturb, ControlPanelRevealed],
+    (hasNotifications, dontDisturb, controlPanelRevealed) => hasNotifications && !dontDisturb && !controlPanelRevealed,
+  )
 
   sound.init(null)
 

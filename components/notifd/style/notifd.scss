@@ -2,11 +2,22 @@
 
 window.notification-center {
 
+  .container {
+    margin-right: 1em;
+
+    > *:not(:last-child) {
+      margin-bottom: 1em;
+    }
+
+    > *:first-child {
+      margin-top: 1em;
+    }
+  }
+
   .notification {
-    background: darker($bg-color);
+    background: var(--popover-bg-color);
     border-radius: 10px;
-    border: 2px solid $borders;
-    margin: 1em;
+    border: 2px solid var(--border-color);
     padding: 0.5rem;
     opacity: 0.8;
 
@@ -16,7 +27,8 @@ window.notification-center {
     }
 
     .toolbar {
-      all: unset;
+      color: var(--popover-fg-color);
+      box-shadow: 0px 2px 1px var(--shade-color);
 
       .icon {
         margin-right: 0.3rem;
@@ -24,12 +36,14 @@ window.notification-center {
       }
 
       .header {
+        color: var(--popover-fg-color);
         font-size: 12pt;
       }
 
       .subheader {
-        font-weight: lighter;
-        font-size: 10pt;
+        // color: darker(var(--popover-fg-color));
+        opacity: 0.8;
+        font-size: 12pt;
       }
 
       button {
@@ -40,8 +54,11 @@ window.notification-center {
 
 
     .content {
+      padding-top: 0.5em;
+      padding-bottom: 0.5em;
+
       box.image {
-        border: 1px solid gtkalpha($fg-color, 0.02);
+        border: 1px solid var(--border-color);
         margin-right: 0.5rem;
         border-radius: 9px;
         min-width: 100px;
@@ -55,16 +72,16 @@ window.notification-center {
         min-height: 100px;
         border-radius: 9px;
         margin-right: 0.5rem;
-        border: 1px solid gtkalpha($fg-color, 0.02);
+        border: 1px solid var(--border-color);
       }
 
       label.summary {
         font-size: 1.2em;
-        color: $fg-color;
+        color: var(--popover-fg-color);
       }
 
       label.body {
-        color: gtkalpha($fg-color, 0.8);
+        color: gtkalpha(var(--popover-fg-color), 0.8);
       }
     }
 

@@ -21,7 +21,7 @@ import TrayItem from "./tray"
 // import TrayItems from "./tray"
 import Battery from "./battery"
 
-import ControlPanelPopover from "@components/control-panel"
+import { ControlPanelPopover, ControlPanelRevealed } from "@components/control-panel"
 
 // export { default as BarItem } from "./item"
 // export { default as PrivacyIndicators } from "./privacy"
@@ -47,7 +47,6 @@ function CenterBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, 
 function EndBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, monitor: Accessor<AstalHyprland.Monitor>, index: Accessor<number> }) {
   const tray = Tray.get_default()
   const trayItems = createBinding(tray, "items")
-  var [reveal, setReveal] = createState(false);
 
   return <box class="end" $type="end">
     <box class="application-tray">
@@ -62,15 +61,15 @@ function EndBlock({ gdkmonitor, monitor, index }: { gdkmonitor: Gdk.Monitor, mon
       class="control-panel flat"
     >
       <box class="system-tray" orientation={Gtk.Orientation.HORIZONTAL}>
-        <VideoRecordingIndicator reveal={reveal} />
-        <ListeningIndicator reveal={reveal} />
-        <WiredStatus reveal={reveal} />
-        <WirelessStatus reveal={reveal} />
-        <Bluetooth reveal={reveal} />
-        <Battery reveal={reveal} />
-        <Clock reveal={reveal} />
+        <VideoRecordingIndicator reveal={ControlPanelRevealed} />
+        <ListeningIndicator reveal={ControlPanelRevealed} />
+        <WiredStatus reveal={ControlPanelRevealed} />
+        <WirelessStatus reveal={ControlPanelRevealed} />
+        <Bluetooth reveal={ControlPanelRevealed} />
+        <Battery reveal={ControlPanelRevealed} />
+        <Clock reveal={ControlPanelRevealed} />
       </box>
-      <ControlPanelPopover monitor={monitor} setVisible={setReveal} />
+      <ControlPanelPopover monitor={monitor} />
     </menubutton >
   </box >
 }
