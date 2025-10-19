@@ -162,13 +162,23 @@ export function NotificationCenter({ gdkmonitor }: {
   sound.init(null)
 
   const notifdConnectionIDs = [
-    notifd.connect("notified", () => {
+    notifd.connect("notified", (self, id) => {
       if (notifd.dont_disturb) {
         return
       }
 
+      const notification = notifd.get_notification(id)
+      if (notification === null) {
+        return
+      }
+
+      if (notification.suppress_sound) {
+        return
+      }
+
       sound.play_simple({
-        [GSound.ATTR_EVENT_ID]: "bell",
+        [GSound.ATTR_EVENT_ID]: notification.sound_name || "bell",
+        [GSound.ATTR_MEDIA_FILENAME]: notification.sound_file,
       }, null)
     })
   ]
