@@ -4,7 +4,9 @@ import Gtk from "gi://Gtk?version=4.0"
 import Adw from "gi://Adw?version=1"
 import app from "ags/gtk4/app";
 import { For, This, createBinding } from "ags";
+import { interval } from "ags/time";
 
+import { Apps } from "@components/launcher";
 import { Bar } from "@components/bar";
 import { NotificationCenter } from "@components/notifd";
 import style from "./style/main.scss";
@@ -36,7 +38,10 @@ app.start({
   main: function() {
     const monitors = createBinding(app, "monitors");
 
-    <For each={monitors}>
+    // Reload applications every 10 seconds
+    interval(10000, () => Apps.reload());
+
+    return <For each={monitors}>
       {(monitor, index) => (
         <This this={app}>
           <Bar gdkmonitor={monitor} index={index} />
