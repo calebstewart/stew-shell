@@ -51,7 +51,7 @@ export function ActiveWorkspace({ monitor, gdkmonitor, index }: {
                     }
                   })
 
-                  return <menubutton name="launcher-button">
+                  return <menubutton class="flat" name="launcher-button">
                     <box>
                       <image class="icon" icon_name={icon} />
                       <label label={label} />
