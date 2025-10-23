@@ -7,8 +7,16 @@ popover.control-panel {
     margin-bottom: 0.5rem;
   }
 
-  > arrow, contents {
+  > arrow {
     background: transparent;
+    border: unset;
+    box-shadow: unset;
+  }
+
+  > contents {
+    // background: transparent;
+    background: gtkalpha(black, 0.3);
+    border-radius: 10px;
     border: unset;
     box-shadow: unset;
   }

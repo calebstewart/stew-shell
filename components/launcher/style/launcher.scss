@@ -3,7 +3,19 @@
  */
 @use "../../../style/gtk.scss" as *;
 
-.launcher {
+popover.launcher {
+
+  > arrow {
+    background: transparent;
+    border: unset;
+    box-shadow: unset;
+  }
+
+  > contents {
+    background: var(--popover-bg-color);
+  }
+
+
   entry.search {
     margin-bottom: 0.8rem;
   }
@@ -15,7 +27,7 @@
 
     image {
       font-size: 3em;
-      margin-right: 0.3rem;
+      margin-right: 1rem;
     }
 
     label.name {
