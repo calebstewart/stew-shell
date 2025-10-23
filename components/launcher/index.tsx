@@ -61,7 +61,7 @@ export function Application({ app, onActivate }: {
     class="app flat"
     onClicked={() => { launchApplication(app); onActivate && onActivate(app) }} >
     <box>
-      <image icon_name={icon_name} />
+      <image icon_name={icon_name} icon_size={Gtk.IconSize.LARGE} valign={Gtk.Align.CENTER} />
       <box valign={Gtk.Align.CENTER} orientation={Gtk.Orientation.VERTICAL}>
         <label class="name" xalign={0} label={name} />
         <label class="description" wrap={true} xalign={0} label={app.description} visible={Boolean(app.description)} />
