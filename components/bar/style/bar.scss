@@ -4,7 +4,8 @@
 @use "../../../style/colors.scss" as *;
 
 window.Bar {
-  background: gtkalpha($bg-color, 1.0);
+  background: gtkalpha(var(--headerbar-bg-color), 1.0);
+  color: var(--headerbar-fg-color);
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
 
@@ -21,8 +22,14 @@ window.Bar {
         animation: unmuted-flash 2s ease-in-out 0s infinite alternate;
 
         @keyframes unmuted-flash {
-          0% { background-color: $error; }
-          100% { background-color: $bg-color; }
+          0% {
+            background-color: var(--error-bg-color);
+            color: var(--error-fg-color)
+          }
+          100% {
+            background-color: var(--headerbar-bg-color);
+            color: var(--headerbar-fg-color);
+          }
         }
       }
 
@@ -30,8 +37,15 @@ window.Bar {
         animation: muted-flash 2s ease-in-out 0s infinite alternate;
 
         @keyframes muted-flash {
-          0% { background-color: gtkshade($fg-color, 1.5); color: gtkshade($bg-color, 0.67); }
-          100% { background-color: $bg-color; color: $fg-color; }
+          0% {
+            background-color: gtkshade(var(--headerbar-fg-color), 1.5);
+            color: gtkshade(var(--headerbar-bg-color), 0.67);
+          }
+
+          100% {
+            background-color: var(--headerbar-bg-color);
+            color: var(--headerbar-fg-color);
+          }
         }
       }
     }

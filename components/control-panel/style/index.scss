@@ -15,7 +15,7 @@ popover.control-panel {
 
   > contents {
     // background: transparent;
-    background: gtkalpha(black, 0.3);
+    background: gtkalpha(var(--popover-shade-color), 0.3);
     border-radius: 10px;
     border: unset;
     box-shadow: unset;
