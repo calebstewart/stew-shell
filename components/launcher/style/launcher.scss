@@ -12,7 +12,7 @@ popover.launcher {
   }
 
   > contents {
-    background: var(--popover-bg-color);
+    background: gtkalpha(var(--popover-shade-color), 3);
   }
 
 
@@ -32,10 +32,10 @@ popover.launcher {
 
     label.name {
       font-size: 1.1em;
+      font-weight: bolder;
     }
 
     label.description {
-      font-weight: lighter;
     }
   }
 

@@ -53,8 +53,8 @@ export function ActiveWorkspace({ monitor, gdkmonitor, index }: {
 
                   return <menubutton class="flat" name="launcher-button">
                     <box>
-                      <image class="icon" icon_name={icon} />
-                      <label label={label} />
+                      <image class="icon" icon_name={icon} valign={Gtk.Align.CENTER} />
+                      <label label={label} valign={Gtk.Align.BASELINE_CENTER} />
                     </box>
                     <LauncherPopover monitor={monitor} />
                   </menubutton>

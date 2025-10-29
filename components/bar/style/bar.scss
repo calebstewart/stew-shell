@@ -4,9 +4,9 @@
 @use "../../../style/colors.scss" as *;
 
 window.Bar {
-  background: gtkalpha(var(--headerbar-bg-color), 1.0);
+  background: var(--headerbar-darker-shade-color);
   color: var(--headerbar-fg-color);
-  margin-top: 0.25rem;
+  margin-top: 0rem;
   margin-bottom: 0.25rem;
 
   box.end {
@@ -27,7 +27,7 @@ window.Bar {
             color: var(--error-fg-color)
           }
           100% {
-            background-color: var(--headerbar-bg-color);
+            background-color: var(--headerbar-darker-shade-color);
             color: var(--headerbar-fg-color);
           }
         }
@@ -43,7 +43,7 @@ window.Bar {
           }
 
           100% {
-            background-color: var(--headerbar-bg-color);
+            background-color: var(--headerbar-darker-shade-color);
             color: var(--headerbar-fg-color);
           }
         }
@@ -71,8 +71,17 @@ window.Bar {
     }
   }
 
+  box.workspaces {
+    button {
+      border-radius: 0;
+    }
+  }
 
   box.active_workspace {
+    button {
+      border-radius: 0;
+    }
+
     label {
       font-size: 12pt;
     }
