@@ -55,14 +55,14 @@ function SystemControls({ notifd }: {
     }
   }
 
-  const setupBluetooth = (self: Gtk.ToggleButton) => {
+  const setupBluetooth = (self: Gtk.ToggleButton, adapter: AstalBluetooth.Adapter) => {
     // Bidirectional binding of bluetooth adapter power
-    self.bind_property("active", bluetooth.adapter, "powered", GObject.BindingFlags.BIDIRECTIONAL)
+    self.bind_property("active", adapter, "powered", GObject.BindingFlags.BIDIRECTIONAL)
   }
 
   const setupWifi = (self: Gtk.ToggleButton, wifi: AstalNetwork.Wifi) => {
     // Bidirectional binding with wifi status
-    self.bind_property("active", network.wifi, "enabled", GObject.BindingFlags.BIDIRECTIONAL)
+    self.bind_property("active", wifi, "enabled", GObject.BindingFlags.BIDIRECTIONAL)
   }
 
   const setupDoNotDisturb = (self: Gtk.ToggleButton) => {
@@ -70,11 +70,64 @@ function SystemControls({ notifd }: {
   }
 
   // We attempt to lock all sessions matching our username and which have a seat assigned
-  const credentials = new Gio.Credentials()
-  const sessions = LoginManager.ListSessionsSync()[0]
-    .filter((s: any) => s[3] !== "" && s[1] == credentials.get_unix_user())
-    .map((s: any): string => s[0])
-  const lockSessions = () => sessions.forEach((sid: string) => LoginManager.LockSessionSync(sid))
+  const lockAllSessions = () => {
+    // Construct a credentials object, so we can find our user info
+    const credentials = new Gio.Credentials()
+
+    // Lookup all sessions which match our user and have a seat assigned
+    const sessions = LoginManager.ListSessionsSync()[0]
+      .filter((s: any) => s[3] !== "" && s[1] == credentials.get_unix_user())
+      .map((s: any): string => s[0])
+
+    // For each session, attempt to lock the session
+    sessions.forEach((sid: string) => LoginManager.LockSessionSync(sid))
+  }
+
+  const reboot = (self: Gtk.Button) => {
+    const dialog = new Gtk.AlertDialog({
+      detail: "Are you sure?",
+      modal: true,
+      message: "The system is about to reboot!",
+      buttons: ["Cancel", "Reboot"],
+      cancel_button: 0,
+      default_button: 1,
+    })
+
+    // Hide the control panel
+    ControlPanelRegistry.popdown()
+
+    // Show the confirmation dialog
+    dialog.choose(self.get_root() as Gtk.Window, null, (_, result) => {
+      const response = dialog.choose_finish(result)
+
+      if (response == 1) {
+        LoginManager.RebootSync(true)
+      }
+    })
+  }
+
+  const powerOff = (self: Gtk.Button) => {
+    const dialog = new Gtk.AlertDialog({
+      detail: "Are you sure?",
+      modal: true,
+      message: "The system is about to power off!",
+      buttons: ["Cancel", "Power Off"],
+      cancel_button: 0,
+      default_button: 1,
+    })
+
+    // Hide the control panel
+    ControlPanelRegistry.popdown()
+
+    // Show the confirmation dialog
+    dialog.choose(self.get_root() as Gtk.Window, null, (_, result) => {
+      const response = dialog.choose_finish(result)
+
+      if (response == 1) {
+        LoginManager.PowerOffSync(true)
+      }
+    })
+  }
 
   return <box class="system-controls" orientation={Gtk.Orientation.VERTICAL}>
     <centerbox class="toolbar">
@@ -84,9 +137,9 @@ function SystemControls({ notifd }: {
       <box $type="center" />
       <box class="linked" $type="end">
         <button icon_name={batteryIcon} tooltip_text={batteryTooltip} visible={batteryPresent} />
-        <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" onClicked={lockSessions} />
-        <button icon_name="system-reboot-symbolic" tooltip_text="Reboot" onClicked={() => LoginManager.RebootSync(true)} />
-        <button icon_name="system-shutdown-symbolic" tooltip_text="Shutdown" onClicked={() => LoginManager.PowerOffSync(true)} />
+        <button icon_name="system-lock-screen-symbolic" tooltip_text="Lock Screen" onClicked={lockAllSessions} />
+        <button icon_name="system-reboot-symbolic" tooltip_text="Reboot" onClicked={reboot} />
+        <button icon_name="system-shutdown-symbolic" tooltip_text="Shutdown" onClicked={powerOff} />
       </box>
     </centerbox >
     <revealer reveal_child={revealPower} transition_type={Gtk.RevealerTransitionType.SLIDE_DOWN}>
@@ -119,15 +172,22 @@ function SystemControls({ notifd }: {
           </Gtk.FlowBoxChild>
         }}
       </With>
-      <Gtk.FlowBoxChild>
-        <togglebutton
-          hexpand={true}
-          vexpand={true}
-          label="Bluetooth"
-          sensitive={createBinding(bluetooth, "adapter")((adapter) => adapter !== null)}
-          active={bluetooth.adapter?.powered}
-          $={setupBluetooth} />
-      </Gtk.FlowBoxChild>
+      <With value={createBinding(bluetooth, "adapter")}>
+        {(adapter: AstalBluetooth.Adapter) => {
+          if (adapter === null) {
+            return null;
+          }
+
+          return <Gtk.FlowBoxChild>
+            <togglebutton
+              hexpand={true}
+              vexpand={true}
+              label="Bluetooth"
+              active={adapter.powered}
+              $={(self) => setupBluetooth(self, adapter)} />
+          </Gtk.FlowBoxChild>
+        }}
+      </With>
       <Gtk.FlowBoxChild>
         <togglebutton
           hexpand={true}
