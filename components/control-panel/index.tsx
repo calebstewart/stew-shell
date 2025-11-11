@@ -124,7 +124,8 @@ function SystemControls({ notifd }: {
           hexpand={true}
           vexpand={true}
           label="Bluetooth"
-          active={bluetooth.adapter.powered}
+          sensitive={createBinding(bluetooth, "adapter")((adapter) => adapter !== null)}
+          active={bluetooth.adapter?.powered}
           $={setupBluetooth} />
       </Gtk.FlowBoxChild>
       <Gtk.FlowBoxChild>
