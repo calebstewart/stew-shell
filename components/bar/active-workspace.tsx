@@ -26,24 +26,13 @@ export function ActiveWorkspace({ monitor, gdkmonitor, index }: {
             return <box>
               <With value={client}>
                 {(client) => {
-                  if (client === null) {
-                    // Probably this is a new workspace, and there are no previous clients
-                    return <menubutton class="flat" name="launcher-button">
-                      <box>
-                        <image class="icon" icon_name="display" />
-                        <label label="Desktop" />
-                      </box>
-                      <LauncherPopover monitor={monitor} />
-                    </menubutton>
-                  }
-
-                  const label = createBinding(client, "title")
+                  const label = client === null ? "Desktop" : createBinding(client, "title")
                   const initialClass = createBinding(client, "initial_class")
 
                   // Do our best to identify the application icon by trying the initial class
                   // as an icon name in the current icon theme, then try to locate an application
                   // in the app database with a matching class name and use the database icon.
-                  const icon = createComputed([initialClass, applications], (initialClass, applications) => {
+                  const icon = client === null ? "display" : createComputed([initialClass, applications], (initialClass, applications) => {
                     if (iconTheme.has_icon(initialClass)) {
                       return initialClass
                     } else {
